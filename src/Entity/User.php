@@ -426,4 +426,38 @@
 
             return $this;
         }
+
+
+        /**
+         * Get the timestamp when this record was created.
+         *
+         * @return \DateTime
+         */
+        public function getCreatedAt(): \DateTime
+        {
+            return $this->createdAt;
+        }
+
+        /**
+         * Get the timestamp when this record was last updated.
+         *
+         * @return \DateTime|null
+         */
+        public function getUpdatedAt(): ?\DateTime
+        {
+            return $this->updatedAt;
+        }
+
+        /**
+         * Set the timestamp when this record was last updated.
+         *
+         * @param \DateTime|null $updatedAt
+         * @return $this
+         */
+        public function setUpdatedAt(?\DateTime $updatedAt): self
+        {
+            $this->updatedAt = $updatedAt;
+
+            return $this;
+        }
     }
