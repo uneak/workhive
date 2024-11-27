@@ -23,6 +23,19 @@ services:
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
 
+  phpmyadmin:
+    container_name: "phpmyadmin"
+    image: phpmyadmin:5.2.1
+    depends_on:
+      - database
+    environment:
+      PMA_PORT: "3306"
+      PMA_HOST: "database"
+      PMA_USER: "app"
+      PMA_PASSWORD: "app"
+    ports:
+      - 81:80
+
 ###> doctrine/doctrine-bundle ###
   database:
     ports:
