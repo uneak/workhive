@@ -6,9 +6,13 @@
     <div class="container mt-5">
         <ul>
             {% for room in rooms %}
-                <li>{{ room.name }} | <a href="{{ path('app_room_edit', {id: room.id }) }}">Edit</a></li>
+                <li>
+                    {{ room.name }} |
+                    <a class="btn btn-primary" href="{{ path('app_room_edit', {id: room.id }) }}">Edit</a> |
+                    {{ include('_partials/_delete_form.html.twig', {entity: room, path: 'app_room_delete'}) }}
+                </li>
             {% endfor %}
         </ul>
     </div>
-    <a href="{{ path('app_room_create') }}" class="btn btn-primary">Create Room</a>
+    <a href="{{ path('app_room_new') }}" class="btn btn-primary">Create Room</a>
 {% endblock %}
