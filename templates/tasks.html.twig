@@ -76,7 +76,7 @@
                 {% endfor %}
             </ul>
             <div class="card-body form-section">
-                <form method="POST" action="/add" class="mb-0">
+                <form method="POST" action="{{ path('app_task_add') }}" class="mb-0">
                     <div class="input-group">
                         <input type="text" name="task_name" class="form-control" placeholder="Nouvelle tâche" required>
                         <button class="btn btn-primary" type="submit">
