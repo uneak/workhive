@@ -8,6 +8,7 @@
     use Doctrine\Common\Collections\ArrayCollection;
     use Doctrine\Common\Collections\Collection;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents a room that can be reserved.
@@ -32,6 +33,7 @@
          * @var string
          */
         #[ORM\Column(type: 'string', length: 100)]
+        #[Assert\NotBlank]
         private string $name;
 
         /**
@@ -40,6 +42,13 @@
          * @var int
          */
         #[ORM\Column(type: 'integer')]
+        #[Assert\Positive]
+        #[Assert\NotBlank]
+        #[Assert\Range(
+            notInRangeMessage: 'You must be between {{ min }} and {{ max }} users tall to enter',
+            min: 1,
+            max: 20,
+        )]
         private int $capacity;
 
         /**
@@ -488,6 +497,18 @@
         public function getUpdatedAt(): ?\DateTime
         {
             return $this->updatedAt;
+        }
+
+        /**
+         * Set the timestamp when the equipment was created.
+         *
+         * @param \DateTime $createdAt
+         *
+         * @return void
+         */
+        public function setCreatedAt(\DateTime $createdAt): void
+        {
+            $this->createdAt = $createdAt;
         }
 
         /**

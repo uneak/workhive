@@ -1,0 +1,14 @@
+{% extends 'bootstrap_base.html.twig' %}
+
+{% block title %}Room List{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <ul>
+            {% for room in rooms %}
+                <li>{{ room.name }} | <a href="{{ path('app_room_edit', {id: room.id }) }}">Edit</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_room_create') }}" class="btn btn-primary">Create Room</a>
+{% endblock %}

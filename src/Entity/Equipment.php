@@ -195,6 +195,18 @@
         }
 
         /**
+         * Set the timestamp when the equipment was created.
+         *
+         * @param \DateTime $createdAt
+         *
+         * @return void
+         */
+        public function setCreatedAt(\DateTime $createdAt): void
+        {
+            $this->createdAt = $createdAt;
+        }
+
+        /**
          * Get the timestamp when the equipment was last updated.
          *
          * @return \DateTime|null
