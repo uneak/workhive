@@ -2,15 +2,17 @@
 
     namespace App\Services\Payment\Options;
 
-    readonly class PaypalOptions implements PaymentOptionsInterface
+    class PaypalOptions implements PaymentOptionsInterface
     {
         private string $email;
         private string $password;
 
-        public function __construct(array $data)
+        public function __construct(?array $data = null)
         {
-            $this->email = $data['email'];
-            $this->password = $data['password'];
+            if ($data !== null) {
+                $this->email = $data['email'];
+                $this->password = $data['password'];
+            }
         }
 
         public function getEmail(): string
@@ -21,6 +23,16 @@
         public function getPassword(): string
         {
             return $this->password;
+        }
+
+        public function setEmail(string $email): void
+        {
+            $this->email = $email;
+        }
+
+        public function setPassword(string $password): void
+        {
+            $this->password = $password;
         }
 
         public function _toArray(): array

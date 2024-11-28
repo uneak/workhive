@@ -1,0 +1,60 @@
+{% extends 'bootstrap_base.html.twig' %}
+
+{% block title %}Reservation Form{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1 class="mb-4">{{ reservation.id is not null ? 'Edit Reservation' : 'Create Reservation' }}</h1>
+
+        {{ form_start(form, { 'attr': { 'class': 'needs-validation', 'novalidate': 'novalidate' } }) }}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.room, 'Room', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.room, { 'attr': { 'class': 'form-select' } }) }}
+                    {{ form_errors(form.room, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.user, 'User', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.user, { 'attr': { 'class': 'form-select' } }) }}
+                    {{ form_errors(form.user, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.startAt, 'Start Date and Time', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.startAt, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.startAt, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.endAt, 'End Date and Time', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.endAt, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.endAt, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form_label(form.status, 'Reservation Status', { 'label_attr': { 'class': 'form-label' } }) }}
+            {{ form_widget(form.status, { 'attr': { 'class': 'form-select' } }) }}
+            {{ form_errors(form.status, { 'attr': { 'class': 'text-danger' } }) }}
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('app_reservation_list') }}" class="btn btn-secondary">Back to List</a>
+            <button type="submit" class="btn btn-primary">
+                {{ reservation.id is not null ? 'Update Reservation' : 'Create Reservation' }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

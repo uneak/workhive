@@ -1,81 +1,91 @@
 <?php
 
-namespace App\Controller;
+    namespace App\Controller;
 
-use App\Entity\Equipment;
-use App\Form\EquipmentType;
-use App\Repository\EquipmentRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+    use App\Entity\Equipment;
+    use App\Form\EquipmentType;
+    use App\Repository\EquipmentRepository;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('admin/equipment')]
-final class EquipmentController extends AbstractController
-{
-    #[Route('/', name: 'app_equipment_index', methods: ['GET'])]
-    public function index(EquipmentRepository $equipmentRepository): Response
+    #[Route('admin/equipment', name: 'app_equipment_')]
+    class EquipmentController extends AbstractController
     {
-        return $this->render('equipment/index.html.twig', [
-            'equipment' => $equipmentRepository->findAll(),
-        ]);
-    }
-
-    #[Route('/new', name: 'app_equipment_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $equipment = new Equipment();
-        $form = $this->createForm(EquipmentType::class, $equipment);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($equipment);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_equipment_index', [], Response::HTTP_SEE_OTHER);
+        #[Route('/', name: 'list', methods: ['GET'])]
+        public function index(EquipmentRepository $repository): Response
+        {
+            return $this->render('equipment/list.html.twig', [
+                'equipments' => $repository->findAll()
+            ]);
         }
 
-        return $this->render('equipment/new.html.twig', [
-            'equipment' => $equipment,
-            'form' => $form,
-        ]);
-    }
+        #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+        public function create(EntityManagerInterface $em, Request $request): Response
+        {
+            $equipment = new Equipment();
+            $action = $this->generateUrl('app_equipment_new');
 
-    #[Route('/{id}', name: 'app_equipment_show', methods: ['GET'])]
-    public function show(Equipment $equipment): Response
-    {
-        return $this->render('equipment/show.html.twig', [
-            'equipment' => $equipment,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_equipment_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Equipment $equipment, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(EquipmentType::class, $equipment);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_equipment_index', [], Response::HTTP_SEE_OTHER);
+            return $this->handleForm($em, $request, $action, $equipment);
         }
 
-        return $this->render('equipment/edit.html.twig', [
-            'equipment' => $equipment,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_equipment_delete', methods: ['POST'])]
-    public function delete(Request $request, Equipment $equipment, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$equipment->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($equipment);
-            $entityManager->flush();
+        #[Route('/{id}', name: 'show', methods: ['GET'])]
+        public function show(EquipmentRepository $repository, int $id): Response
+        {
+            return $this->render('equipment/show.html.twig', [
+                'equipment' => $repository->find($id),
+            ]);
         }
 
-        return $this->redirectToRoute('app_equipment_index', [], Response::HTTP_SEE_OTHER);
+        #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+        public function edit(EntityManagerInterface $em, Request $request, int $id): Response
+        {
+            $equipment = $em->getRepository(Equipment::class)->find($id);
+            $action = $this->generateUrl('app_equipment_edit', ['id' => $id]);
+
+            return $this->handleForm($em, $request, $action, $equipment);
+        }
+
+        #[Route('/{id}', name: 'delete', methods: ['POST'])]
+        public function delete(EntityManagerInterface $em, Request $request, int $id): Response
+        {
+            $equipment = $em->getRepository(Equipment::class)->find($id);
+
+            if ($this->isCsrfTokenValid('delete' . $equipment->getId(), $request->getPayload()->getString('_token'))) {
+                $em->remove($equipment);
+                $em->flush();
+            }
+
+            return $this->redirectToRoute('app_equipment_list', [], Response::HTTP_SEE_OTHER);
+        }
+
+        protected function handleForm(
+            EntityManagerInterface $em,
+            Request $request,
+            string $action,
+            Equipment $equipment,
+            ?string $redirect = null
+        ): Response {
+            $form = $this->createForm(EquipmentType::class, $equipment, ['action' => $action, 'method' => 'POST']);
+
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $em->persist($equipment);
+                $em->flush();
+
+                if ($redirect) {
+                    return $this->redirect($redirect);
+                } else {
+                    return $this->redirectToRoute('app_equipment_list');
+                }
+            }
+
+            return $this->render('equipment/form.html.twig', [
+                'form' => $form,
+                'equipment' => $equipment,
+            ]);
+        }
     }
-}

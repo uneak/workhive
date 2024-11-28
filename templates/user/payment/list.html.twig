@@ -1,0 +1,21 @@
+{% extends 'bootstrap_base.html.twig' %}
+
+{% block title %}Payment List{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <ul>
+            {% for paymentMethod in paymentMethods %}
+                <li>
+                    {{ paymentMethod.label }} |
+                    <a class="btn btn-primary" href="{{ path('app_user_payment_edit', {id: paymentMethod.id, idUser: paymentMethod.user.id }) }}">Edit</a> |
+                    {{ include('user/payment/_delete_form.html.twig', {entity: paymentMethod, path: 'app_user_payment_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_user_payment_new', {idUser: user.id, type: 'credit_card' }) }}" class="btn btn-primary">Create credit_card</a>
+    <a href="{{ path('app_user_payment_new', {idUser: user.id, type: 'bitcoin' }) }}" class="btn btn-primary">Create bitcoin</a>
+    <a href="{{ path('app_user_payment_new', {idUser: user.id, type: 'bank_transfer' }) }}" class="btn btn-primary">Create bank_transfer</a>
+    <a href="{{ path('app_user_payment_new', {idUser: user.id, type: 'paypal' }) }}" class="btn btn-primary">Create paypal</a>
+{% endblock %}

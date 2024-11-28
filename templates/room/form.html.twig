@@ -4,7 +4,8 @@
 
 {% block body %}
     <div class="container mt-5">
-        <h1 class="mb-4">{{ room.id is defined ? 'Edit Room' : 'Create Room' }}</h1>
+        {{ room.id }}
+        <h1 class="mb-4">{{ room.id is not null ? 'Edit Room' : 'Create Room' }}</h1>
 
         {{ form_start(form, { 'attr': { 'class': 'needs-validation', 'novalidate': 'novalidate' } }) }}
 {#        https://symfony.com/doc/current/form/form_customization.html#form-rendering-functions#}
@@ -64,7 +65,7 @@
         <div class="d-flex justify-content-between mt-4">
             <a href="{{ path('app_room_list') }}" class="btn btn-secondary">Back to List</a>
             <button type="submit" class="btn btn-primary">
-                {{ room.id is defined ? 'Update Room' : 'Create Room' }}
+                {{ room.id is not null ? 'Update Room' : 'Create Room' }}
             </button>
         </div>
 

@@ -3,6 +3,7 @@
     namespace App\Entity;
 
     use App\Repository\PaymentMethodRepository;
+    use App\Services\Payment\Options\PaymentOptionsInterface;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
 
@@ -172,12 +173,12 @@
         /**
          * Set additional data for the payment method.
          *
-         * @param array $data
+         * @param array|PaymentOptionsInterface $data
          * @return $this
          */
-        public function setData(array $data): static
+        public function setData(array|PaymentOptionsInterface $data): static
         {
-            $this->data = $data;
+            $this->data = ($data instanceof PaymentOptionsInterface) ? $data->_toArray() : $data;
 
             return $this;
         }

@@ -2,8 +2,10 @@
 
     namespace App\Services\Payment\Type;
 
+    use App\Form\PaymentOptions\CreditCardOptionsType;
     use App\Services\Payment\Method\CreditCardPayment;
     use App\Services\Payment\Options\CreditCardOptions;
+    use Symfony\Component\Form\FormTypeInterface;
 
     class CreditCardType implements PaymentTypeInterface
     {
@@ -29,5 +31,13 @@
          */
         public function getOptions(): string {
             return CreditCardOptions::class;
+        }
+
+        /**
+         * @return class-string<FormTypeInterface>
+         */
+        public function getFormType(): string
+        {
+            return CreditCardOptionsType::class;
         }
     }

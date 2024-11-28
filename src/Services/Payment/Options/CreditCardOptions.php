@@ -2,16 +2,19 @@
 
     namespace App\Services\Payment\Options;
 
-    readonly class CreditCardOptions implements PaymentOptionsInterface
+    class CreditCardOptions implements PaymentOptionsInterface
     {
         private string $number;
-            private string $expiration;
-            private string $cvv;
+        private string $expiration;
+        private string $cvv;
 
-        public function __construct(array $data) {
-            $this->number = $data['number'];
-            $this->expiration = $data['expiration'];
-            $this->cvv = $data['cvv'];
+        public function __construct(?array $data = null)
+        {
+            if ($data !== null) {
+                $this->number = $data['number'];
+                $this->expiration = $data['expiration'];
+                $this->cvv = $data['cvv'];
+            }
         }
 
         public function getNumber(): string
@@ -29,12 +32,27 @@
             return $this->cvv;
         }
 
+        public function setNumber(string $number): void
+        {
+            $this->number = $number;
+        }
+
+        public function setExpiration(string $expiration): void
+        {
+            $this->expiration = $expiration;
+        }
+
+        public function setCvv(string $cvv): void
+        {
+            $this->cvv = $cvv;
+        }
+
         public function _toArray(): array
         {
             return [
-                'number' => $this->number,
+                'number'     => $this->number,
                 'expiration' => $this->expiration,
-                'cvv' => $this->cvv
+                'cvv'        => $this->cvv
             ];
         }
     }

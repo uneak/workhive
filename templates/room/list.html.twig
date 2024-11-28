@@ -9,6 +9,8 @@
                 <li>
                     {{ room.name }} |
                     <a class="btn btn-primary" href="{{ path('app_room_edit', {id: room.id }) }}">Edit</a> |
+                    <a class="btn btn-primary" href="{{ path('app_room_equipment_list', {idRoom: room.id }) }}">Equipment</a> |
+                    <a class="btn btn-primary" href="{{ path('app_room_rate_list', {idRoom: room.id }) }}">Rate</a> |
                     {{ include('_partials/_delete_form.html.twig', {entity: room, path: 'app_room_delete'}) }}
                 </li>
             {% endfor %}

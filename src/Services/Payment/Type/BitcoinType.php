@@ -2,8 +2,11 @@
 
     namespace App\Services\Payment\Type;
 
+    use App\Form\PaymentOptions\BankTransfertOptionsType;
+    use App\Form\PaymentOptions\BitcoinOptionsType;
     use App\Services\Payment\Method\BitcoinPayment;
     use App\Services\Payment\Options\BitcoinOptions;
+    use Symfony\Component\Form\FormTypeInterface;
 
     class BitcoinType implements PaymentTypeInterface
     {
@@ -29,5 +32,13 @@
          */
         public function getOptions(): string {
             return BitcoinOptions::class;
+        }
+
+        /**
+         * @return class-string<FormTypeInterface>
+         */
+        public function getFormType(): string
+        {
+            return BitcoinOptionsType::class;
         }
     }
