@@ -9,13 +9,15 @@
     use Doctrine\Common\Collections\ArrayCollection;
     use Doctrine\Common\Collections\Collection;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+    use Symfony\Component\Security\Core\User\UserInterface;
 
     /**
      * Represents a user in the application.
      */
     #[ORM\Entity(repositoryClass: UserRepository::class)]
     #[ORM\Table(name: 'users')]
-    class User
+    class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         /**
          * The unique identifier of the user.
@@ -78,10 +80,10 @@
         /**
          * The hashed password of the user.
          *
-         * @var string
+         * @var ?string
          */
         #[ORM\Column(type: 'string')]
-        private string $password;
+        private ?string $password;
 
         /**
          * The status of the user (active or inactive).
@@ -292,9 +294,9 @@
         /**
          * Get the hashed password of the user.
          *
-         * @return string
+         * @return ?string
          */
-        public function getPassword(): string
+        public function getPassword(): ?string
         {
             return $this->password;
         }
@@ -302,11 +304,11 @@
         /**
          * Set the hashed password of the user.
          *
-         * @param string $password
+         * @param ?string $password
          *
          * @return $this
          */
-        public function setPassword(string $password): static
+        public function setPassword(?string $password): static
         {
             $this->password = $password;
 
@@ -471,5 +473,21 @@
             $this->updatedAt = $updatedAt;
 
             return $this;
+        }
+
+
+        public function getRoles(): array
+        {
+            return [$this->userRole->value];
+        }
+
+        public function eraseCredentials(): void
+        {
+//            $this->setPassword(null);
+        }
+
+        public function getUserIdentifier(): string
+        {
+            return $this->email;
         }
     }

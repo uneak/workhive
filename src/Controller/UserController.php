@@ -9,6 +9,7 @@
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
     use Symfony\Component\Routing\Attribute\Route;
 
     #[Route('admin/user', name: 'app_user_')]
@@ -23,12 +24,11 @@
         }
 
         #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-        public function create(EntityManagerInterface $em, Request $request): Response
+        public function create(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): Response
         {
             $user = new User();
             $action = $this->generateUrl('app_user_new');
-
-            return $this->handleForm($em, $request, $action, $user);
+            return $this->handleForm($em, $request, $passwordHasher, $action, $user);
         }
 
         #[Route('/{id}', name: 'show', methods: ['GET'])]
@@ -40,12 +40,12 @@
         }
 
         #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-        public function edit(EntityManagerInterface $em, Request $request, int $id): Response
+        public function edit(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher, int $id): Response
         {
             $user = $em->getRepository(User::class)->find($id);
             $action = $this->generateUrl('app_user_edit', ['id' => $id]);
 
-            return $this->handleForm($em, $request, $action, $user);
+            return $this->handleForm($em, $request, $passwordHasher, $action, $user);
         }
 
         #[Route('/{id}', name: 'delete', methods: ['POST'])]
@@ -64,6 +64,7 @@
         protected function handleForm(
             EntityManagerInterface $em,
             Request $request,
+            UserPasswordHasherInterface $passwordHasher,
             string $action,
             User $user,
             ?string $redirect = null
@@ -73,6 +74,11 @@
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
+
+                $plainPassword = $user->getPassword();
+                $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
+                $user->setPassword($hashedPassword);
+
                 $em->persist($user);
                 $em->flush();
 
