@@ -3,9 +3,9 @@
     namespace App\Enum;
     enum UserRole: string
     {
-        case MEMBER = 'ROLE_MEMBER';
-        case USER = 'ROLE_USER';
-        case ADMIN = 'ROLE_ADMIN';
+        case ROLE_MEMBER = 'member';
+        case ROLE_USER = 'user';
+        case ROLE_ADMIN = 'admin';
 
         /**
          * Converts the enum cases into an associative array.

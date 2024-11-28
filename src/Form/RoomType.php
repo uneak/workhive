@@ -54,11 +54,10 @@
                 ->add('status', ChoiceType::class, [
                     'label'        => 'Status',
                     'choices'      => array_combine(
-                        array_map(fn($case) => $case->name, Status::cases()), // Labels
+                        array_map(fn($case) => $case->value, Status::cases()), // Labels
                         Status::cases() // Enum cases as values
                     ),
-                    'choice_value' => fn(?Status $status) => $status?->value, // Maps enum to value
-                    'choice_label' => fn(?Status $status) => $status->name, // Maps enum to label
+                    'choice_label' => fn(?Status $status) => $status->value, // Maps enum to label
                     'placeholder'  => 'Choose a status',
                 ])
                 ->add('description', TextareaType::class, [

@@ -42,10 +42,10 @@
                 ->add('userRole', ChoiceType::class, [
                     'label'        => 'Role',
                     'choices'      => array_combine(
-                        array_map(fn($role) => ucfirst(strtolower($role->name)), UserRole::cases()),
+                        array_map(fn($role) => $role->value, UserRole::cases()),
                         UserRole::cases()
                     ),
-                    'choice_label' => fn(UserRole $role) => ucfirst(strtolower($role->name)),
+                    'choice_label' => fn(UserRole $role) => $role->value,
                     'placeholder'  => 'Select a role',
                 ])
                 ->add('phone', TextType::class, [
@@ -70,10 +70,10 @@
                 ->add('status', ChoiceType::class, [
                     'label'        => 'Status',
                     'choices'      => array_combine(
-                        array_map(fn($status) => ucfirst(strtolower($status->name)), Status::cases()),
+                        array_map(fn($status) => $status->value, Status::cases()),
                         Status::cases()
                     ),
-                    'choice_label' => fn(Status $status) => ucfirst(strtolower($status->name)),
+                    'choice_label' => fn(Status $status) => $status->value,
                     'placeholder'  => 'Select a status',
                 ]);
         }

@@ -29,10 +29,10 @@
                 ->add('userRole', ChoiceType::class, [
                     'label' => 'User Role',
                     'choices' => array_combine(
-                        array_map(fn($role) => ucfirst(strtolower($role->name)), UserRole::cases()),
+                        array_map(fn($role) => $role->value, UserRole::cases()),
                         UserRole::cases()
                     ),
-                    'choice_label' => fn(UserRole $role) => ucfirst(strtolower($role->name)),
+                    'choice_label' => fn(UserRole $role) => $role->value,
                     'placeholder' => 'Select a user role',
                     'attr' => [
                         'class' => 'form-select',

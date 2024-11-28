@@ -130,7 +130,7 @@
          */
         public function __construct()
         {
-            $this->userRole = UserRole::USER;
+            $this->userRole = UserRole::ROLE_USER;
             $this->status = Status::ACTIVE;
             $this->createdAt = new DateTime();
             $this->paymentMethods = new ArrayCollection();
@@ -478,7 +478,7 @@
 
         public function getRoles(): array
         {
-            return [$this->userRole->value];
+            return [$this->getUserRole()->name];
         }
 
         public function eraseCredentials(): void

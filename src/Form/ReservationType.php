@@ -6,6 +6,7 @@
     use App\Entity\Room;
     use App\Entity\User;
     use App\Enum\ReservationStatus;
+    use App\Enum\UserRole;
     use Symfony\Bridge\Doctrine\Form\Type\EntityType;
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -53,9 +54,10 @@
                 ->add('status', ChoiceType::class, [
                     'label' => 'Reservation Status',
                     'choices' => array_combine(
-                        array_map(fn($status) => ucfirst(strtolower($status->name)), ReservationStatus::cases()),
+                        array_map(fn($status) => $status->value, ReservationStatus::cases()),
                         ReservationStatus::cases()
                     ),
+                    'choice_label' => fn(ReservationStatus $status) => $status->value,
                     'placeholder' => 'Select a status',
                     'attr' => [
                         'class' => 'form-select',
