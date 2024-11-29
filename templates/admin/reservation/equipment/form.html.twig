@@ -1,0 +1,40 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Reservation Equipment Form{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <h1 class="mb-4">{{ reservationEquipment.id is not null ? 'Edit Reservation Equipment' : 'Create Reservation Equipment' }}</h1>
+
+        {{ form_start(form, { 'attr': { 'class': 'needs-validation', 'novalidate': 'novalidate' } }) }}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.equipment, 'Equipment', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.equipment, { 'attr': { 'class': 'form-select' } }) }}
+                    {{ form_errors(form.equipment, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.quantity, 'Quantity', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.quantity, { 'attr': { 'class': 'form-control', 'placeholder': 'Enter the quantity', 'min': '1' } }) }}
+                    {{ form_errors(form.quantity, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('app_admin_reservation_equipment_list', {idReservation: reservationEquipment.reservation.id}) }}" class="btn btn-secondary">Back to List</a>
+            <button type="submit" class="btn btn-primary">
+                {{ reservationEquipment.id is not null ? 'Update Reservation Equipment' : 'Create Reservation Equipment' }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

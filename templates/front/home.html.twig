@@ -1,0 +1,13 @@
+{% extends 'layout/home.html.twig' %}
+
+{% block title %}Hello LoginController!{% endblock %}
+
+{% block main %}
+    HELLO HOME
+    on a des salles a louer !
+    <ul>
+        {% for room in rooms %}
+            <li>{{ room.name }} - {{ room.area }}m2</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

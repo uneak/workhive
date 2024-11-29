@@ -1,0 +1,21 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Equipment Equipment List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <ul>
+            {% for equipmentRoleRate in equipmentRoleRates %}
+                <li>
+                    {{ equipmentRoleRate.userRole.value }} |
+                    <a class="btn btn-primary"
+                       href="{{ path('app_admin_equipment_rate_edit', {id: equipmentRoleRate.id, idEquipment: equipment.id}) }}">Edit</a>
+                    |
+                    {{ include('admin/equipment/rate/_delete_form.html.twig', {entity: equipmentRoleRate, path: 'app_admin_equipment_rate_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_admin_equipment_rate_new', {idEquipment: equipment.id}) }}" class="btn btn-primary">Create
+        Equipment</a>
+{% endblock %}

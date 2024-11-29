@@ -1,0 +1,47 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Room Equipment Form{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <h1 class="mb-4">{{ roomEquipment.id is not null ? 'Edit Room Equipment' : 'Create Room Equipment' }}</h1>
+
+        {{ form_start(form, { 'attr': { 'class': 'needs-validation', 'novalidate': 'novalidate' } }) }}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.room, 'Room', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.room, { 'attr': { 'class': 'form-select' } }) }}
+                    {{ form_errors(form.room, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.equipment, 'Equipment', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.equipment, { 'attr': { 'class': 'form-select' } }) }}
+                    {{ form_errors(form.equipment, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.quantity, 'Quantity', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.quantity, { 'attr': { 'class': 'form-control', 'placeholder': 'Enter quantity' } }) }}
+                    {{ form_errors(form.quantity, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('app_admin_room_equipment_list', {idRoom: roomEquipment.room.id}) }}" class="btn btn-secondary">Back to List</a>
+            <button type="submit" class="btn btn-primary">
+                {{ roomEquipment.id is not null ? 'Update Room Equipment' : 'Create Room Equipment' }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

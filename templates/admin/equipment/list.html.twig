@@ -1,0 +1,19 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}equipment List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <ul>
+            {% for equipment in equipments %}
+                <li>
+                    {{ equipment.name }} |
+                    <a class="btn btn-primary" href="{{ path('app_admin_equipment_edit', {id: equipment.id }) }}">Edit</a> |
+                    <a class="btn btn-primary" href="{{ path('app_admin_equipment_rate_list', {idEquipment: equipment.id }) }}">Rate</a> |
+                    {{ include('_partials/_delete_form.html.twig', {entity: equipment, path: 'app_admin_equipment_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_admin_equipment_new') }}" class="btn btn-primary">Create equipment</a>
+{% endblock %}

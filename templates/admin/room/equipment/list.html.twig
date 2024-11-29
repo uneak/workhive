@@ -1,0 +1,21 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Room Equipment List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <ul>
+            {% for roomEquipment in roomEquipments %}
+                <li>
+                    {{ roomEquipment.equipment.name }} |
+                    <a class="btn btn-primary"
+                       href="{{ path('app_admin_room_equipment_edit', {id: roomEquipment.id, idRoom: room.id}) }}">Edit</a>
+                    |
+                    {{ include('admin/room/equipment/_delete_form.html.twig', {entity: roomEquipment, path: 'app_admin_room_equipment_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_admin_room_equipment_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+        Room</a>
+{% endblock %}

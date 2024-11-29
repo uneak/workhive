@@ -1,0 +1,21 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Reservation Equipment List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <ul>
+            {% for reservationEquipment in reservationEquipments %}
+                <li>
+                    {{ reservationEquipment.equipment.name }} |
+                    <a class="btn btn-primary"
+                       href="{{ path('app_admin_reservation_equipment_edit', {id: reservationEquipment.id, idReservation: reservation.id}) }}">Edit</a>
+                    |
+                    {{ include('admin/reservation/equipment/_delete_form.html.twig', {entity: reservationEquipment, path: 'app_admin_reservation_equipment_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_admin_reservation_equipment_new', {idReservation: reservation.id}) }}" class="btn btn-primary">Create
+        Reservation</a>
+{% endblock %}
