@@ -1,0 +1,20 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Room List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <ul>
+            {% for dateSchedule in dateSchedules %}
+                <li>
+                    {{ dateSchedule.name }} |
+                    <a class="btn btn-primary"
+                       href="{{ path('app_admin_room_date_schedule_edit', {id: dateSchedule.id, idRoom: room.id}) }}">Edit</a>
+                    {{ include('admin/room/schedule/date/_delete_form.html.twig', {entity: dateSchedule, path: 'app_admin_room_date_schedule_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_admin_room_date_schedule_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+        Schedule</a>
+{% endblock %}

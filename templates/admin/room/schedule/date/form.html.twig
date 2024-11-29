@@ -1,0 +1,62 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Date Schedule Form{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <h1 class="mb-4">{{ dateSchedule.id is not null ? 'Edit Date Schedule' : 'Create Date Schedule' }}</h1>
+
+        {{ form_start(form, { 'attr': { 'class': 'needs-validation', 'novalidate': 'novalidate' } }) }}
+
+        <div class="form-group mb-3">
+            {{ form_label(form.name, 'Schedule Name', { 'label_attr': { 'class': 'form-label' } }) }}
+            {{ form_widget(form.name, { 'attr': { 'class': 'form-control', 'placeholder': 'Optional schedule name' } }) }}
+            {{ form_errors(form.name, { 'attr': { 'class': 'text-danger' } }) }}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.date, 'Schedule Date', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.date, { 'attr': { 'class': 'form-control', 'placeholder': 'Select a date' } }) }}
+                    {{ form_errors(form.date, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.isOpen, 'Is Open', { 'label_attr': { 'class': 'form-check-label' } }) }}
+                    <div class="form-check">
+                        {{ form_widget(form.isOpen, { 'attr': { 'class': 'form-check-input' } }) }}
+                    </div>
+                    {{ form_errors(form.isOpen, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.startedAt, 'Start Time', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.startedAt, { 'attr': { 'class': 'form-control', 'placeholder': 'Select start time' } }) }}
+                    {{ form_errors(form.startedAt, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    {{ form_label(form.endedAt, 'End Time', { 'label_attr': { 'class': 'form-label' } }) }}
+                    {{ form_widget(form.endedAt, { 'attr': { 'class': 'form-control', 'placeholder': 'Select end time' } }) }}
+                    {{ form_errors(form.endedAt, { 'attr': { 'class': 'text-danger' } }) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('app_admin_room_date_schedule_list', {idRoom: dateSchedule.room.id}) }}" class="btn btn-secondary">Back to List</a>
+            <button type="submit" class="btn btn-primary">
+                {{ dateSchedule.id is not null ? 'Update Schedule' : 'Create Schedule' }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

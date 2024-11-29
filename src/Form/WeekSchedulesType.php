@@ -45,15 +45,6 @@
                     'attr' => [
                         'class' => 'form-select',
                     ],
-                ])
-                ->add('room', EntityType::class, [
-                    'class' => Room::class,
-                    'choice_label' => 'name',
-                    'label' => 'Room',
-                    'placeholder' => 'Select a room',
-                    'attr' => [
-                        'class' => 'form-select',
-                    ],
                 ]);
         }
 
