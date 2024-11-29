@@ -14,18 +14,6 @@
     #[Route('admin/room/{idRoom}/week_schedule', name: 'app_admin_room_week_schedule_')]
     class RoomWeekScheduleController extends AbstractController
     {
-        #[Route('/', name: 'list', methods: ['GET'])]
-        public function index(EntityManagerInterface $em, int $idRoom): Response
-        {
-            $room = $em->getRepository(Room::class)->find($idRoom);
-            $weekSchedules = $em->getRepository(WeekSchedules::class)->findBy(['room' => $room]);
-
-            return $this->render('admin/room/schedule/week/list.html.twig', [
-                'room' => $room,
-                'weekSchedules' => $weekSchedules
-            ]);
-        }
-
         #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
         public function create(EntityManagerInterface $em, Request $request, int $idRoom): Response
         {
@@ -36,16 +24,6 @@
             $weekSchedule->setRoom($room);
 
             return $this->handleForm($em, $request, $action, $weekSchedule);
-        }
-
-        #[Route('/{id}', name: 'show', methods: ['GET'])]
-        public function show(EntityManagerInterface $em, int $id): Response
-        {
-            $weekSchedule = $em->getRepository(WeekSchedules::class)->find($id);
-
-            return $this->render('admin/room/schedule/week/show.html.twig', [
-                'weekSchedule' => $weekSchedule,
-            ]);
         }
 
         #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
@@ -67,7 +45,7 @@
                 $em->flush();
             }
 
-            return $this->redirectToRoute('app_admin_room_week_schedule_list', ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_room_schedule_list', ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
         }
 
         protected function handleForm(
@@ -88,7 +66,7 @@
                 if ($redirect) {
                     return $this->redirect($redirect);
                 } else {
-                    return $this->redirectToRoute('app_admin_room_week_schedule_list', ['idRoom' => $weekSchedule->getRoom()->getId()], Response::HTTP_SEE_OTHER);
+                    return $this->redirectToRoute('app_admin_room_schedule_list', ['idRoom' => $weekSchedule->getRoom()->getId()], Response::HTTP_SEE_OTHER);
                 }
             }
 

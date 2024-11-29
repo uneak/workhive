@@ -51,7 +51,7 @@
         </div>
 
         <div class="d-flex justify-content-between mt-4">
-            <a href="{{ path('app_admin_room_date_schedule_list', {idRoom: dateSchedule.room.id}) }}" class="btn btn-secondary">Back to List</a>
+            <a href="{{ path('app_admin_room_schedule_list', {idRoom: dateSchedule.room.id}) }}" class="btn btn-secondary">Back to List</a>
             <button type="submit" class="btn btn-primary">
                 {{ dateSchedule.id is not null ? 'Update Schedule' : 'Create Schedule' }}
             </button>
