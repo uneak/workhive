@@ -20,9 +20,10 @@
         public function rent(EntityManagerInterface $em, Request $request, int $id): Response
         {
             $room = $em->getRepository(Room::class)->find($id);
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
 
-            if (!$this->getUser()) {
+            if (!$user) {
                 throw $this->createAccessDeniedException('Vous devez être connecté pour louer une salle.');
             }
 
@@ -38,7 +39,7 @@
                 $endAt = $data['endAt'];
 
                 // Calcul du montant de la réservation
-                $calculatedAmount = $this->calculateReservationAmount($room, $startAt, $endAt);
+                $amount = $this->calculateReservationAmount($room, $startAt, $endAt);
 
                 // Créer une nouvelle réservation
                 $reservation = new Reservation();
@@ -53,7 +54,7 @@
                 // Créer un paiement
                 $payment = new Payment();
                 $payment->setReservation($reservation);
-                $payment->setAmount($calculatedAmount);
+                $payment->setAmount($amount);
                 $payment->setPaymentMethod($selectedPaymentMethod);
                 $payment->setStatus(PaymentStatus::COMPLETED);
                 $em->persist($payment);
