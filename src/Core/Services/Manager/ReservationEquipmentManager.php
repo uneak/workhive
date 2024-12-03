@@ -19,8 +19,8 @@
             parent::__construct($this->repository);
         }
 
-        public function getByReservation(ReservationEquipmentModel $reservation): array
+        public function getByReservation(int $reservationId): array
         {
-            return $this->repository->findByReservation($reservation->getId());
+            return $this->repository->findByReservation($reservationId);
         }
     }

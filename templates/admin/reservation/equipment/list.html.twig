@@ -1,21 +1,54 @@
-{% extends 'layout/admin.html.twig' %}
+{% extends 'layout/page_list.html.twig' %}
 
 {% block title %}Reservation Equipment List{% endblock %}
 
-{% block main %}
-    <div class="container mt-5">
-        <ul>
-            {% for reservationEquipment in reservationEquipments %}
-                <li>
-                    {{ reservationEquipment.equipment.name }} |
-                    <a class="btn btn-primary"
-                       href="{{ path('app_admin_reservation_equipment_edit', {id: reservationEquipment.id, idReservation: reservation.id}) }}">Edit</a>
-                    |
-                    {{ include('admin/reservation/equipment/_delete_form.html.twig', {entity: reservationEquipment, path: 'app_admin_reservation_equipment_delete'}) }}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
+
+
+
+{% block list_title %}reservation equipment{% endblock %}
+
+{% block list_header %}
+    <tr>
+        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Room</th>
+        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Equipement</th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Quantity</th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned At</th>
+        <th class="text-secondary opacity-7"></th>
+    </tr>
+{% endblock %}
+
+{% block list_body %}
+    {% for reservationEquipment in reservationEquipments %}
+        <tr>
+            <td>
+                <div class="d-flex px-2 py-1">
+                    <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ reservationEquipment.reservation.room.name }}</h6>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <p class="text-xs font-weight-bold mb-0">{{ reservationEquipment.equipment.name }}</p>
+                <p class="text-xs text-secondary mb-0"></p>
+            </td>
+            <td class="align-middle text-center text-sm">
+                <p class="text-xs font-weight-bold mb-0"><strong>{{ reservationEquipment.quantity }}</strong> / {{ reservationEquipment.equipment.totalStock }}</p>
+            </td>
+            <td class="align-middle text-center">
+                <span class="text-secondary text-xs font-weight-bold">{{ reservationEquipment.createdAt|date('d/m/Y') }}</span>
+            </td>
+            <td class="align-middle">
+                <a class="text-secondary font-weight-bold text-xs"
+                   href="{{ path('app_admin_reservation_equipment_edit', {id: reservationEquipment.id, idReservation: reservation.id}) }}">Edit</a>
+                |
+                {{ include('admin/reservation/equipment/_delete_form.html.twig', {entity: reservationEquipment, path: 'app_admin_reservation_equipment_delete'}) }}
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block list_actions %}
     <a href="{{ path('app_admin_reservation_equipment_new', {idReservation: reservation.id}) }}" class="btn btn-primary">Create
         Reservation</a>
 {% endblock %}
+
