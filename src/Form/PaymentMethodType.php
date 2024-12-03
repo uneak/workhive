@@ -2,8 +2,8 @@
 
     namespace App\Form;
 
+    use App\Core\Services\Payment\PaymentFactory;
     use App\Entity\PaymentMethod;
-    use App\Services\Payment\PaymentFactory;
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\Form\FormBuilderInterface;

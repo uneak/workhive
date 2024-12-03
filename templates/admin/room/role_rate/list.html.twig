@@ -1,0 +1,21 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Room Equipment List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <ul>
+            {% for roomRoleRate in roomRoleRates %}
+                <li>
+                    {{ roomRoleRate.userRole.value }} |
+                    <a class="btn btn-primary"
+                       href="{{ path('app_admin_room_role_rate_edit', {id: roomRoleRate.id, idRoom: room.id}) }}">Edit</a>
+                    |
+                    {{ include('admin/room/role_rate/_delete_form.html.twig', {entity: roomRoleRate, path: 'app_admin_room_role_rate_delete'}) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{{ path('app_admin_room_role_rate_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+        Room</a>
+{% endblock %}

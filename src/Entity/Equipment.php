@@ -2,7 +2,9 @@
 
     namespace App\Entity;
 
+    use App\Core\Model\EquipmentModel;
     use App\Repository\EquipmentRepository;
+    use DateTime;
     use Doctrine\ORM\Mapping as ORM;
 
     /**
@@ -10,7 +12,7 @@
      */
     #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
     #[ORM\Table(name: 'equipments')]
-    class Equipment
+    class Equipment implements EquipmentModel
     {
         /**
          * The unique identifier of the equipment.
@@ -60,7 +62,7 @@
          * @var \DateTime
          */
         #[ORM\Column(type: 'datetime')]
-        private \DateTime $createdAt;
+        private DateTime $createdAt;
 
         /**
          * The timestamp when the equipment was last updated.
@@ -68,14 +70,14 @@
          * @var \DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
-        private ?\DateTime $updatedAt;
+        private ?DateTime $updatedAt;
 
         /**
          * Initializes the equipment with a creation timestamp.
          */
         public function __construct()
         {
-            $this->createdAt = new \DateTime();
+            $this->createdAt = new DateTime();
         }
 
         /**
@@ -105,7 +107,7 @@
          *
          * @return $this
          */
-        public function setName(string $name): self
+        public function setName(string $name): static
         {
             $this->name = $name;
 
@@ -129,7 +131,7 @@
          *
          * @return $this
          */
-        public function setDescription(?string $description): self
+        public function setDescription(?string $description): static
         {
             $this->description = $description;
 
@@ -153,7 +155,7 @@
          *
          * @return $this
          */
-        public function setPhoto(?string $photo): self
+        public function setPhoto(?string $photo): static
         {
             $this->photo = $photo;
 
@@ -177,7 +179,7 @@
          *
          * @return $this
          */
-        public function setTotalStock(int $totalStock): self
+        public function setTotalStock(int $totalStock): static
         {
             $this->totalStock = $totalStock;
 
@@ -189,7 +191,7 @@
          *
          * @return \DateTime
          */
-        public function getCreatedAt(): \DateTime
+        public function getCreatedAt(): DateTime
         {
             return $this->createdAt;
         }
@@ -201,7 +203,7 @@
          *
          * @return void
          */
-        public function setCreatedAt(\DateTime $createdAt): void
+        public function setCreatedAt(DateTime $createdAt): void
         {
             $this->createdAt = $createdAt;
         }
@@ -211,7 +213,7 @@
          *
          * @return \DateTime|null
          */
-        public function getUpdatedAt(): ?\DateTime
+        public function getUpdatedAt(): ?DateTime
         {
             return $this->updatedAt;
         }
@@ -223,7 +225,7 @@
          *
          * @return $this
          */
-        public function setUpdatedAt(?\DateTime $updatedAt): self
+        public function setUpdatedAt(?DateTime $updatedAt): static
         {
             $this->updatedAt = $updatedAt;
 

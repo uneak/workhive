@@ -2,17 +2,18 @@
 
     namespace App\Repository;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Repository\Adapter\SymfonyRepository;
+    use App\Core\Repository\RoomRoleRateRepositoryInterface;
     use App\Entity\RoomRoleRate;
-    use App\Enum\UserRole;
-    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
     use Doctrine\Persistence\ManagerRegistry;
 
     /**
-     * Repository class for the RoomRoleRate entity.
+     * Repository class for the Room entity.
      *
-     * @extends ServiceEntityRepository<RoomRoleRate>
+     * @extends SymfonyRepository<RoomRoleRate>
      */
-    class RoomRoleRateRepository extends ServiceEntityRepository
+    class RoomRoleRateRepository extends SymfonyRepository implements RoomRoleRateRepositoryInterface
     {
         /**
          * Constructor for the RoomRoleRate repository.
@@ -25,11 +26,22 @@
         }
 
         /**
-         * Finds all role rates for a specific room.
+         * @inheritDoc
          *
-         * @param int $roomId The ID of the room.
+         * @throws \Exception
+         */
+        protected function hydrateObject(array $data, ObjectModel $object): void
+        {
+            if (isset($data['room'])) $object->setRoom($data['room']);
+            if (isset($data['userRole'])) $object->setUserRole($data['userRole']);
+            if (isset($data['hourlyRate'])) $object->setHourlyRate($data['hourlyRate']);
+        }
+
+        /**
+         * Get all room role rates by room ID.
          *
-         * @return RoomRoleRate[] Returns an array of RoomRoleRate objects.
+         * @param int $roomId The ID of the room
+         * @return array<RoomRoleRate>
          */
         public function findByRoom(int $roomId): array
         {
@@ -41,58 +53,4 @@
                 ->getResult();
         }
 
-        /**
-         * Finds the hourly rate for a specific user role and room.
-         *
-         * @param int      $roomId   The ID of the room.
-         * @param UserRole $userRole The user role to search for.
-         *
-         * @return RoomRoleRate|null Returns the RoomRoleRate object or null if not found.
-         */
-        public function findRateByRoomAndRole(int $roomId, UserRole $userRole): ?RoomRoleRate
-        {
-            return $this->createQueryBuilder('rrr')
-                ->andWhere('rrr.room = :roomId')
-                ->andWhere('rrr.userRole = :userRole')
-                ->setParameter('roomId', $roomId)
-                ->setParameter('userRole', $userRole->value)
-                ->getQuery()
-                ->getOneOrNullResult();
-        }
-
-        /**
-         * Finds all role rates within a specific hourly rate range.
-         *
-         * @param float $minRate The minimum hourly rate.
-         * @param float $maxRate The maximum hourly rate.
-         *
-         * @return RoomRoleRate[] Returns an array of RoomRoleRate objects.
-         */
-        public function findByRateRange(float $minRate, float $maxRate): array
-        {
-            return $this->createQueryBuilder('rrr')
-                ->andWhere('rrr.hourlyRate BETWEEN :minRate AND :maxRate')
-                ->setParameter('minRate', $minRate)
-                ->setParameter('maxRate', $maxRate)
-                ->orderBy('rrr.hourlyRate', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds all unique user roles for a specific room.
-         *
-         * @param int $roomId The ID of the room.
-         *
-         * @return string[] Returns an array of user role strings.
-         */
-        public function findRolesByRoom(int $roomId): array
-        {
-            return $this->createQueryBuilder('rrr')
-                ->select('DISTINCT rrr.userRole')
-                ->andWhere('rrr.room = :roomId')
-                ->setParameter('roomId', $roomId)
-                ->getQuery()
-                ->getSingleColumnResult();
-        }
     }

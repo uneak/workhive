@@ -2,17 +2,19 @@
 
     namespace App\Repository;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Repository\Adapter\SymfonyRepository;
+    use App\Core\Repository\PaymentMethodRepositoryInterface;
     use App\Entity\PaymentMethod;
-    use App\Entity\User;
-    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+    use DateTime;
     use Doctrine\Persistence\ManagerRegistry;
 
     /**
      * Repository class for the PaymentMethod entity.
      *
-     * @extends ServiceEntityRepository<PaymentMethod>
+     * @extends SymfonyRepository<PaymentMethod>
      */
-    class PaymentMethodRepository extends ServiceEntityRepository
+    class PaymentMethodRepository extends SymfonyRepository implements PaymentMethodRepositoryInterface
     {
         /**
          * Constructor for the PaymentMethod repository.
@@ -25,71 +27,31 @@
         }
 
         /**
-         * Finds all payment methods for a specific user.
+         * @inheritDoc
          *
-         * @param int $userId The ID of the user.
-         * @return PaymentMethod[] Returns an array of PaymentMethod objects.
+         * @throws \Exception
+         */
+        protected function hydrateObject(array $data, ObjectModel $object): void
+        {
+            if (isset($data['user'])) $object->setUser($data['user']);
+            if (isset($data['label'])) $object->setLabel($data['label']);
+            if (isset($data['type'])) $object->setType($data['type']);
+            if (isset($data['data'])) $object->setData($data['data']);
+            if (isset($data['createdAt'])) $object->setCreatedAt(new DateTime($data['createdAt']));
+            if (isset($data['updatedAt'])) $object->setUpdatedAt(new DateTime($data['updatedAt']));
+        }
+
+        /**
+         * Get all payment methods by user ID.
+         *
+         * @param int $userId The ID of the user
+         * @return array<PaymentMethod>
          */
         public function findByUser(int $userId): array
         {
             return $this->createQueryBuilder('pm')
                 ->andWhere('pm.user = :userId')
                 ->setParameter('userId', $userId)
-                ->orderBy('pm.createdAt', 'DESC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds a payment method by its label for a specific user.
-         *
-         * @param int $userId The ID of the user.
-         * @param string $label The label of the payment method.
-         * @return PaymentMethod|null Returns the PaymentMethod object if found, or null otherwise.
-         */
-        public function findByUserAndLabel(int $userId, string $label): ?PaymentMethod
-        {
-            return $this->createQueryBuilder('pm')
-                ->andWhere('pm.user = :userId')
-                ->andWhere('pm.label = :label')
-                ->setParameter('userId', $userId)
-                ->setParameter('label', $label)
-                ->getQuery()
-                ->getOneOrNullResult();
-        }
-
-        /**
-         * Finds all payment methods of a specific type for a user.
-         *
-         * @param int $userId The ID of the user.
-         * @param string $type The type of payment method (e.g., 'card', 'paypal').
-         * @return PaymentMethod[] Returns an array of PaymentMethod objects.
-         */
-        public function findByUserAndType(int $userId, string $type): array
-        {
-            return $this->createQueryBuilder('pm')
-                ->andWhere('pm.user = :userId')
-                ->andWhere('pm.type = :type')
-                ->setParameter('userId', $userId)
-                ->setParameter('type', $type)
-                ->orderBy('pm.createdAt', 'DESC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds all active payment methods for a specific user.
-         *
-         * @param int $userId The ID of the user.
-         * @return PaymentMethod[] Returns an array of active PaymentMethod objects.
-         */
-        public function findActiveByUser(int $userId): array
-        {
-            return $this->createQueryBuilder('pm')
-                ->andWhere('pm.user = :userId')
-                ->andWhere('pm.updatedAt IS NULL OR pm.updatedAt > :now')
-                ->setParameter('userId', $userId)
-                ->setParameter('now', new \DateTime())
                 ->orderBy('pm.createdAt', 'DESC')
                 ->getQuery()
                 ->getResult();

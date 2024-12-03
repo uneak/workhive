@@ -2,11 +2,11 @@
 
     namespace App\Controller;
 
+    use App\Core\Enum\PaymentStatus;
+    use App\Core\Enum\ReservationStatus;
     use App\Entity\Payment;
     use App\Entity\Reservation;
     use App\Entity\Room;
-    use App\Enum\PaymentStatus;
-    use App\Enum\ReservationStatus;
     use App\Form\PaymentChoiceType;
     use Doctrine\ORM\EntityManagerInterface;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

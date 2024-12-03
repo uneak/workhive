@@ -2,11 +2,13 @@
 
     namespace App\Controller\Admin;
 
-    use App\Entity\Room;
+    use App\Core\Model\ObjectModel;
+    use App\Core\Services\Manager\RoomEquipmentManager;
+    use App\Core\Services\Manager\RoomManager;
     use App\Entity\RoomEquipment;
     use App\Form\RoomEquipmentType;
-    use Doctrine\ORM\EntityManagerInterface;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\Form\FormInterface;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\Routing\Attribute\Route;
@@ -15,86 +17,117 @@
     class RoomEquipmentController extends AbstractController
     {
         #[Route('/', name: 'list', methods: ['GET'])]
-        public function index(EntityManagerInterface $em, int $idRoom): Response
+        public function index(RoomEquipmentManager $manager, RoomManager $roomManager, int $idRoom): Response
         {
-            $room = $em->getRepository(Room::class)->find($idRoom);
-            $roomEquipments = $em->getRepository(RoomEquipment::class)->findBy(['room' => $room]);
-
             return $this->render('admin/room/equipment/list.html.twig', [
-                'room' => $room,
-                'roomEquipments' => $roomEquipments
+                'roomEquipments' => $manager->getByRoom($idRoom),
+                'room'          => $roomManager->get($idRoom)
             ]);
         }
 
         #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-        public function create(EntityManagerInterface $em, Request $request, int $idRoom): Response
-        {
-            $room = $em->getRepository(Room::class)->find($idRoom);
-            $action = $this->generateUrl('app_admin_room_equipment_new', ['idRoom' => $idRoom]);
-
+        public function create(
+            RoomEquipmentManager $manager,
+            RoomManager $roomManager,
+            Request $request,
+            int $idRoom
+        ): Response {
+            $room = $roomManager->get($idRoom);
             $roomEquipment = new RoomEquipment();
             $roomEquipment->setRoom($room);
 
-            return $this->handleForm($em, $request, $action, $roomEquipment);
-        }
+            /** @var RoomEquipment $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                RoomEquipmentType::class,
+                $roomEquipment,
+                [
+                    'action' => $this->generateUrl('app_admin_room_equipment_new', ['idRoom' => $room->getId()]),
+                    'method' => 'POST'
+                ]
+            );
 
-        #[Route('/{id}', name: 'show', methods: ['GET'])]
-        public function show(EntityManagerInterface $em, int $id): Response
-        {
-            $roomEquipment = $em->getRepository(RoomEquipment::class)->find($id);
+            if ($isSubmitted) {
+                $manager->save($data, true);
 
-            return $this->render('admin/room/equipment/show.html.twig', [
-                'roomEquipment' => $roomEquipment,
+                return $this->redirectToRoute('app_admin_room_equipment_list',
+                    ['idRoom' => $room->getId()], Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->render('admin/room/equipment/form.html.twig', [
+                'form'          => $form,
+                'roomEquipment' => $data
             ]);
         }
 
         #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-        public function edit(EntityManagerInterface $em, Request $request, int $idRoom, int $id): Response
-        {
-            $roomEquipment = $em->getRepository(RoomEquipment::class)->find($id);
-            $action = $this->generateUrl('app_admin_room_equipment_edit', ['id' => $id, 'idRoom' => $idRoom]);
-
-            return $this->handleForm($em, $request, $action, $roomEquipment);
-        }
-
-        #[Route('/{id}', name: 'delete', methods: ['POST'])]
-        public function delete(EntityManagerInterface $em, Request $request, int $idRoom, int $id): Response
-        {
-            $roomEquipment = $em->getRepository(RoomEquipment::class)->find($id);
-
-            if ($this->isCsrfTokenValid('delete' . $roomEquipment->getId(), $request->getPayload()->getString('_token'))) {
-                $em->remove($roomEquipment);
-                $em->flush();
-            }
-
-            return $this->redirectToRoute('app_admin_room_equipment_list', ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
-        }
-
-        protected function handleForm(
-            EntityManagerInterface $em,
+        public function edit(
+            RoomEquipmentManager $manager,
             Request $request,
-            string $action,
-            RoomEquipment $roomEquipment,
-            ?string $redirect = null
+            int $idRoom,
+            int $id
         ): Response {
-            $form = $this->createForm(RoomEquipmentType::class, $roomEquipment, ['action' => $action, 'method' => 'POST']);
+            /** @var RoomEquipment $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                RoomEquipmentType::class,
+                $manager->get($id),
+                [
+                    'action' => $this->generateUrl('app_admin_room_equipment_edit',
+                        ['id' => $id, 'idRoom' => $idRoom]),
+                    'method' => 'POST'
+                ]
+            );
 
-            $form->handleRequest($request);
+            if ($isSubmitted) {
+                $manager->save($data, true);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $em->persist($roomEquipment);
-                $em->flush();
-
-                if ($redirect) {
-                    return $this->redirect($redirect);
-                } else {
-                    return $this->redirectToRoute('app_admin_room_equipment_list', ['idRoom' => $roomEquipment->getRoom()->getId()], Response::HTTP_SEE_OTHER);
-                }
+                return $this->redirectToRoute('app_admin_room_equipment_list',
+                    ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
             }
 
             return $this->render('admin/room/equipment/form.html.twig', [
-                'form' => $form,
-                'roomEquipment' => $roomEquipment,
+                'form'          => $form,
+                'roomEquipment' => $data
             ]);
+        }
+
+        #[Route('/{id}', name: 'delete', methods: ['POST'])]
+        public function delete(
+            RoomEquipmentManager $manager,
+            Request $request,
+            int $idRoom,
+            int $id
+        ): Response {
+            if ($this->isCsrfTokenValid('delete' . $id, $request->getPayload()->getString('_token'))) {
+                $manager->remove($manager->get($id), true);
+            }
+
+            return $this->redirectToRoute('app_admin_room_equipment_list',
+                ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
+        }
+
+        /**
+         * @param Request     $request
+         * @param string      $type
+         * @param ObjectModel $data
+         * @param array       $options
+         *
+         * @return array{0: bool, 1: FormInterface, 2: ObjectModel}
+         */
+        protected function handleForm(
+            Request $request,
+            string $type,
+            ObjectModel $data,
+            array $options,
+        ): array {
+            $form = $this->createForm($type, $data, $options);
+            $form->handleRequest($request);
+
+            return [
+                $form->isSubmitted() && $form->isValid(),
+                $form,
+                $form->getData()
+            ];
         }
     }

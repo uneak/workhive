@@ -2,9 +2,9 @@
 
     namespace App\Form;
 
+    use App\Core\Enum\Status;
+    use App\Core\Enum\UserRole;
     use App\Entity\User;
-    use App\Enum\Status;
-    use App\Enum\UserRole;
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
     use Symfony\Component\Form\Extension\Core\Type\EmailType;

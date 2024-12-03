@@ -2,11 +2,13 @@
 
     namespace App\Controller\Admin;
 
-    use App\Entity\Equipment;
+    use App\Core\Model\ObjectModel;
+    use App\Core\Services\Manager\EquipmentManager;
+    use App\Core\Services\Manager\EquipmentRoleRateManager;
     use App\Entity\EquipmentRoleRate;
     use App\Form\EquipmentRoleRateType;
-    use Doctrine\ORM\EntityManagerInterface;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\Form\FormInterface;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\Routing\Attribute\Route;
@@ -15,86 +17,131 @@
     class EquipmentRoleRateController extends AbstractController
     {
         #[Route('/', name: 'list', methods: ['GET'])]
-        public function index(EntityManagerInterface $em, int $idEquipment): Response
-        {
-            $equipment = $em->getRepository(Equipment::class)->find($idEquipment);
-            $equipmentRoleRates = $em->getRepository(EquipmentRoleRate::class)->findBy(['equipment' => $equipment]);
+        public function index(
+            EquipmentManager $equipmentManager,
+            EquipmentRoleRateManager $manager,
+            int $idEquipment
+        ): Response {
+            $equipment = $equipmentManager->get($idEquipment);
 
             return $this->render('admin/equipment/rate/list.html.twig', [
-                'equipment' => $equipment,
-                'equipmentRoleRates' => $equipmentRoleRates
+                'equipment'          => $equipment,
+                'equipmentRoleRates' => $manager->getByEquipment($equipment)
             ]);
         }
 
         #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-        public function create(EntityManagerInterface $em, Request $request, int $idEquipment): Response
-        {
-            $equipment = $em->getRepository(Equipment::class)->find($idEquipment);
-            $action = $this->generateUrl('app_admin_equipment_rate_new', ['idEquipment' => $idEquipment]);
-
+        public function create(
+            EquipmentRoleRateManager $manager,
+            EquipmentManager $equipmentManager,
+            Request $request,
+            int $idEquipment
+        ): Response {
+            $equipment = $equipmentManager->get($idEquipment);
             $equipmentRoleRate = new EquipmentRoleRate();
             $equipmentRoleRate->setEquipment($equipment);
 
-            return $this->handleForm($em, $request, $action, $equipmentRoleRate);
+            /** @var EquipmentRoleRate $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                EquipmentRoleRateType::class,
+                $equipmentRoleRate,
+                [
+                    'action' => $this->generateUrl('app_admin_equipment_rate_new',
+                        ['idEquipment' => $equipment->getId()]),
+                    'method' => 'POST'
+                ]
+            );
+
+            if ($isSubmitted) {
+                $manager->save($data, true);
+
+                return $this->redirectToRoute('app_admin_equipment_rate_list',
+                    ['idEquipment' => $equipment->getId()], Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->render('admin/equipment/rate/form.html.twig', [
+                'form'              => $form,
+                'equipmentRoleRate' => $data
+            ]);
         }
 
         #[Route('/{id}', name: 'show', methods: ['GET'])]
-        public function show(EntityManagerInterface $em, int $id): Response
+        public function show(EquipmentRoleRateManager $manager, int $id): Response
         {
-            $equipmentRoleRate = $em->getRepository(EquipmentRoleRate::class)->find($id);
-
             return $this->render('admin/equipment/rate/show.html.twig', [
-                'equipmentRoleRate' => $equipmentRoleRate,
+                'equipmentRoleRate' => $manager->get($id),
             ]);
         }
 
         #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-        public function edit(EntityManagerInterface $em, Request $request, int $idEquipment, int $id): Response
-        {
-            $equipmentRoleRate = $em->getRepository(EquipmentRoleRate::class)->find($id);
-            $action = $this->generateUrl('app_admin_equipment_rate_edit', ['id' => $id, 'idEquipment' => $idEquipment]);
-
-            return $this->handleForm($em, $request, $action, $equipmentRoleRate);
-        }
-
-        #[Route('/{id}', name: 'delete', methods: ['POST'])]
-        public function delete(EntityManagerInterface $em, Request $request, int $idEquipment, int $id): Response
-        {
-            $equipmentRoleRate = $em->getRepository(EquipmentRoleRate::class)->find($id);
-
-            if ($this->isCsrfTokenValid('delete' . $equipmentRoleRate->getId(), $request->getPayload()->getString('_token'))) {
-                $em->remove($equipmentRoleRate);
-                $em->flush();
-            }
-
-            return $this->redirectToRoute('app_admin_equipment_rate_list', ['idEquipment' => $idEquipment], Response::HTTP_SEE_OTHER);
-        }
-
-        protected function handleForm(
-            EntityManagerInterface $em,
+        public function edit(
+            EquipmentRoleRateManager $manager,
             Request $request,
-            string $action,
-            EquipmentRoleRate $equipmentRoleRate,
-            ?string $redirect = null
+            int $idEquipment,
+            int $id
         ): Response {
-            $form = $this->createForm(EquipmentRoleRateType::class, $equipmentRoleRate, ['action' => $action, 'method' => 'POST']);
+            /** @var EquipmentRoleRate $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                EquipmentRoleRateType::class,
+                $manager->get($id),
+                [
+                    'action' => $this->generateUrl('app_admin_equipment_rate_edit',
+                        ['id' => $id, 'idEquipment' => $idEquipment]),
+                    'method' => 'POST'
+                ]
+            );
 
-            $form->handleRequest($request);
+            if ($isSubmitted) {
+                $manager->save($data, true);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $em->persist($equipmentRoleRate);
-                $em->flush();
-
-                if ($redirect) {
-                    return $this->redirect($redirect);
-                } else {
-                    return $this->redirectToRoute('app_admin_equipment_rate_list', ['idEquipment' => $equipmentRoleRate->getEquipment()->getId()], Response::HTTP_SEE_OTHER);
-                }
+                return $this->redirectToRoute('app_admin_equipment_rate_list',
+                    ['idEquipment' => $idEquipment], Response::HTTP_SEE_OTHER);
             }
 
             return $this->render('admin/equipment/rate/form.html.twig', [
-                'form' => $form,
-                'equipmentRoleRate' => $equipmentRoleRate,
+                'form'              => $form,
+                'equipmentRoleRate' => $data
             ]);
+        }
+
+        #[Route('/{id}', name: 'delete', methods: ['POST'])]
+        public function delete(
+            EquipmentRoleRateManager $manager,
+            Request $request,
+            int $idEquipment,
+            int $id
+        ): Response {
+            if ($this->isCsrfTokenValid('delete' . $id, $request->getPayload()->getString('_token'))) {
+                $manager->remove($manager->get($id), true);
+            }
+
+            return $this->redirectToRoute('app_admin_equipment_rate_list',
+                ['idEquipment' => $idEquipment], Response::HTTP_SEE_OTHER);
+        }
+
+        /**
+         * @param Request     $request
+         * @param string      $type
+         * @param ObjectModel $data
+         * @param array       $options
+         *
+         * @return array{0: bool, 1: FormInterface, 2: ObjectModel}
+         */
+        protected function handleForm(
+            Request $request,
+            string $type,
+            ObjectModel $data,
+            array $options,
+        ): array {
+            $form = $this->createForm($type, $data, $options);
+            $form->handleRequest($request);
+
+            return [
+                $form->isSubmitted() && $form->isValid(),
+                $form,
+                $form->getData()
+            ];
         }
     }

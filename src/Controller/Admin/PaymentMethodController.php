@@ -2,100 +2,143 @@
 
     namespace App\Controller\Admin;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Services\Manager\PaymentMethodManager;
+    use App\Core\Services\Manager\UserManager;
     use App\Entity\PaymentMethod;
-    use App\Entity\User;
     use App\Form\PaymentMethodType;
-    use Doctrine\ORM\EntityManagerInterface;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\Form\FormInterface;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\Routing\Attribute\Route;
 
-    #[Route('admin/user/{idUser}/payment', name: 'app_admin_user_payment_')]
+    #[Route('admin/user/{idUser}/payment', name: 'app_admin_payment_method_')]
     class PaymentMethodController extends AbstractController
     {
         #[Route('/', name: 'list', methods: ['GET'])]
-        public function index(EntityManagerInterface $em, int $idUser): Response
+        public function index(PaymentMethodManager $manager, UserManager $userManager, int $idUser): Response
         {
-            $user = $em->getRepository(User::class)->find($idUser);
-            $paymentMethods = $user->getPaymentMethods();
-
-            return $this->render('admin/user/payment/list.html.twig', [
-                'user' => $user,
-                'paymentMethods' => $paymentMethods
+            return $this->render('admin/user/payment_method/list.html.twig', [
+                'paymentMethods' => $manager->getByUser($idUser),
+                'user'          => $userManager->get($idUser),
             ]);
         }
 
         #[Route('/new/{type}', name: 'new', methods: ['GET', 'POST'])]
-        public function create(EntityManagerInterface $em, Request $request, int $idUser, string $type): Response
-        {
-            $user = $em->getRepository(User::class)->find($idUser);
-            $action = $this->generateUrl('app_admin_user_payment_new', ['type' => $type, 'idUser' => $idUser]);
-
+        public function create(
+            PaymentMethodManager $manager,
+            UserManager $userManager,
+            Request $request,
+            int $idUser,
+            string $type
+        ): Response {
+            $user = $userManager->get($idUser);
             $paymentMethod = new PaymentMethod();
-            $paymentMethod->setType($type);
             $paymentMethod->setUser($user);
+            $paymentMethod->setType($type);
 
-            return $this->handleForm($em, $request, $action, $paymentMethod);
+            /** @var PaymentMethod $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                PaymentMethodType::class,
+                $paymentMethod,
+                [
+                    'action' => $this->generateUrl('app_admin_payment_method_new',
+                        ['idUser' => $user->getId(), 'type' => $type]),
+                    'method' => 'POST'
+                ]
+            );
+
+            if ($isSubmitted) {
+                $manager->save($data, true);
+
+                return $this->redirectToRoute('app_admin_payment_method_list',
+                    ['idUser' => $user->getId()], Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->render('admin/user/payment_method/form.html.twig', [
+                'form'          => $form,
+                'paymentMethod' => $data
+            ]);
         }
 
         #[Route('/{id}', name: 'show', methods: ['GET'])]
-        public function show(EntityManagerInterface $em, int $id): Response
+        public function show(PaymentMethodManager $manager, int $id): Response
         {
-            $paymentMethod = $em->getRepository(PaymentMethod::class)->find($id);
-
-            return $this->render('admin/user/payment/show.html.twig', [
-                'paymentMethod' => $paymentMethod,
+            return $this->render('admin/user/payment_method/show.html.twig', [
+                'payment_method' => $manager->get($id),
             ]);
         }
 
         #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-        public function edit(EntityManagerInterface $em, Request $request, int $idUser, int $id): Response
-        {
-            $paymentMethod = $em->getRepository(PaymentMethod::class)->find($id);
-            $action = $this->generateUrl('app_admin_user_payment_edit', ['id' => $id, 'idUser' => $idUser]);
+        public function edit(
+            PaymentMethodManager $manager,
+            Request $request,
+            int $idUser,
+            int $id
+        ): Response {
+            /** @var PaymentMethod $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                PaymentMethodType::class,
+                $manager->get($id),
+                [
+                    'action' => $this->generateUrl('app_admin_payment_method_edit',
+                        ['idUser' => $idUser, 'id' => $id]),
+                    'method' => 'POST'
+                ]
+            );
 
-            return $this->handleForm($em, $request, $action, $paymentMethod);
+            if ($isSubmitted) {
+                $manager->save($data, true);
+
+                return $this->redirectToRoute('app_admin_payment_method_list',
+                    ['idUser' => $idUser], Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->render('admin/user/payment_method/form.html.twig', [
+                'form'          => $form,
+                'paymentMethod' => $data
+            ]);
         }
 
         #[Route('/{id}', name: 'delete', methods: ['POST'])]
-        public function delete(EntityManagerInterface $em, Request $request, int $idUser, int $id): Response
-        {
-            $paymentMethod = $em->getRepository(PaymentMethod::class)->find($id);
-
-            if ($this->isCsrfTokenValid('delete' . $paymentMethod->getId(), $request->getPayload()->getString('_token'))) {
-                $em->remove($paymentMethod);
-                $em->flush();
+        public function delete(
+            PaymentMethodManager $manager,
+            Request $request,
+            int $idUser,
+            int $id
+        ): Response {
+            if ($this->isCsrfTokenValid('delete' . $id, $request->getPayload()->getString('_token'))) {
+                $manager->remove($manager->get($id), true);
             }
 
-            return $this->redirectToRoute('app_admin_user_payment_list', ['idUser' => $idUser], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_payment_method_list',
+                ['idUser' => $idUser], Response::HTTP_SEE_OTHER);
         }
 
+        /**
+         * @param Request     $request
+         * @param string      $type
+         * @param ObjectModel $data
+         * @param array       $options
+         *
+         * @return array{0: bool, 1: FormInterface, 2: ObjectModel}
+         */
         protected function handleForm(
-            EntityManagerInterface $em,
             Request $request,
-            string $action,
-            PaymentMethod $paymentMethod,
-            ?string $redirect = null
-        ): Response {
-            $form = $this->createForm(PaymentMethodType::class, $paymentMethod, ['action' => $action, 'method' => 'POST']);
-
+            string $type,
+            ObjectModel $data,
+            array $options,
+        ): array {
+            $form = $this->createForm($type, $data, $options);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $em->persist($paymentMethod);
-                $em->flush();
-
-                if ($redirect) {
-                    return $this->redirect($redirect);
-                } else {
-                    return $this->redirectToRoute('app_admin_user_payment_list', ['idUser' => $paymentMethod->getUser()->getId()], Response::HTTP_SEE_OTHER);
-                }
-            }
-
-            return $this->render('admin/user/payment/form.html.twig', [
-                'form' => $form,
-                'paymentMethod' => $paymentMethod,
-            ]);
+            return [
+                $form->isSubmitted() && $form->isValid(),
+                $form,
+                $form->getData()
+            ];
         }
     }

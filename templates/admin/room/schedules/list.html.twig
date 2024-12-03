@@ -1,0 +1,63 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block title %}Room List{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <h1>{{ room.name }}</h1>
+
+        <h2>Horaires hebdomadaires :</h2>
+        <ul>
+            {% for dayId, day in days %}
+            {% set schedules = weekSchedules[dayId] is defined ? weekSchedules[dayId] : [] %}
+                <li>
+                    <strong>{{ day }}</strong> :
+                    {% if schedules is not empty %}
+                        <ul>
+                            {% for schedule in schedules %}
+                                <li>
+                                    {{ schedule.startedAt|date('H:i') }} - {{ schedule.endedAt|date('H:i') }} |
+                                    <a class="btn btn-primary"
+                                       href="{{ path('app_admin_week_schedules_edit', {id: schedule.id, idRoom: room.id}) }}">Edit</a>
+                                    {{ include('admin/room/schedules/week_schedules/_delete_form.html.twig', {entity: schedule, path: 'app_admin_week_schedules_delete'}) }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        Pas d'horaires pour ce jour.
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ path('app_admin_week_schedules_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+            Schedule</a>
+
+        <h2>Ouvertures/Fermetures exceptionnelles :</h2>
+        <ul>
+            {% for date, schedules in dateSchedules %}
+                <li>
+                    <strong>{{ date|date('d/m/Y') }}</strong> :
+                    <ul>
+                        {% for schedule in schedules %}
+                            <li>
+                                {{ schedule.name }} :
+                                {{ schedule.startedAt|date('H:i') }} - {{ schedule.endedAt|date('H:i') }}
+                                {% if schedule.open %}
+                                    (Ouvert)
+                                {% else %}
+                                    (Fermé)
+                                {% endif %}
+
+                                <a class="btn btn-primary"
+                                   href="{{ path('app_admin_date_schedules_edit', {id: schedule.id, idRoom: room.id}) }}">Edit</a>
+                                {{ include('admin/room/schedules/date_schedules/_delete_form.html.twig', {entity: schedule, path: 'app_admin_date_schedules_delete'}) }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ path('app_admin_date_schedules_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+            Schedule</a>
+    </div>
+{% endblock %}

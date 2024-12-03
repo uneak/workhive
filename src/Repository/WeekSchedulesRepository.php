@@ -2,16 +2,19 @@
 
     namespace App\Repository;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Repository\Adapter\SymfonyRepository;
+    use App\Core\Repository\WeekSchedulesRepositoryInterface;
     use App\Entity\WeekSchedules;
-    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+    use DateTime;
     use Doctrine\Persistence\ManagerRegistry;
 
     /**
      * Repository class for the WeekSchedules entity.
      *
-     * @extends ServiceEntityRepository<WeekSchedules>
+     * @extends SymfonyRepository<WeekSchedules>
      */
-    class WeekSchedulesRepository extends ServiceEntityRepository
+    class WeekSchedulesRepository extends SymfonyRepository implements WeekSchedulesRepositoryInterface
     {
         /**
          * Constructor for the WeekSchedules repository.
@@ -24,11 +27,23 @@
         }
 
         /**
-         * Finds all schedules for a specific room.
+         * @inheritDoc
          *
-         * @param int $roomId The ID of the room.
+         * @throws \Exception
+         */
+        protected function hydrateObject(array $data, ObjectModel $object): void
+        {
+            if (isset($data['room'])) $object->setRoom($data['room']);
+            if (isset($data['startedAt'])) $object->setStartedAt(new DateTime($data['startedAt']));
+            if (isset($data['endedAt'])) $object->setEndedAt(new DateTime($data['endedAt']));
+            if (isset($data['weekDay'])) $object->setWeekDay($data['weekDay']);
+        }
+
+        /**
+         * Get all week schedules by room ID.
          *
-         * @return WeekSchedules[] Returns an array of WeekSchedules objects.
+         * @param int $roomId The ID of the room
+         * @return array<WeekSchedules>
          */
         public function findByRoom(int $roomId): array
         {
@@ -36,37 +51,18 @@
                 ->andWhere('ws.room = :roomId')
                 ->setParameter('roomId', $roomId)
                 ->orderBy('ws.weekDay', 'ASC')
-                ->addOrderBy('ws.startedAt', 'ASC')
                 ->getQuery()
                 ->getResult();
         }
 
         /**
-         * Finds all schedules for a specific day of the week.
+         * Get all week schedules by room ID and day of the week.
          *
-         * @param int $weekDay The day of the week (0 = Sunday, 6 = Saturday).
-         *
-         * @return WeekSchedules[] Returns an array of WeekSchedules objects.
+         * @param int $roomId The ID of the room
+         * @param int $weekDay The day of the week (0-6)
+         * @return array<WeekSchedules>
          */
-        public function findByWeekDay(int $weekDay): array
-        {
-            return $this->createQueryBuilder('ws')
-                ->andWhere('ws.weekDay = :weekDay')
-                ->setParameter('weekDay', $weekDay)
-                ->orderBy('ws.startedAt', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds all schedules for a specific room on a specific day of the week.
-         *
-         * @param int $roomId  The ID of the room.
-         * @param int $weekDay The day of the week (0 = Sunday, 6 = Saturday).
-         *
-         * @return WeekSchedules[] Returns an array of WeekSchedules objects.
-         */
-        public function findByRoomAndWeekDay(int $roomId, int $weekDay): array
+        public function findByRoomAndDay(int $roomId, int $weekDay): array
         {
             return $this->createQueryBuilder('ws')
                 ->andWhere('ws.room = :roomId')
@@ -76,55 +72,5 @@
                 ->orderBy('ws.startedAt', 'ASC')
                 ->getQuery()
                 ->getResult();
-        }
-
-        /**
-         * Finds overlapping schedules for a specific room and day.
-         *
-         * @param int                $roomId    The ID of the room.
-         * @param int                $weekDay   The day of the week (0 = Sunday, 6 = Saturday).
-         * @param \DateTimeInterface $startTime The start time of the range.
-         * @param \DateTimeInterface $endTime   The end time of the range.
-         *
-         * @return WeekSchedules[] Returns an array of overlapping WeekSchedules objects.
-         */
-        public function findOverlappingSchedules(
-            int $roomId,
-            int $weekDay,
-            \DateTimeInterface $startTime,
-            \DateTimeInterface $endTime
-        ): array {
-            return $this->createQueryBuilder('ws')
-                ->andWhere('ws.room = :roomId')
-                ->andWhere('ws.weekDay = :weekDay')
-                ->andWhere('(
-                (ws.startedAt < :endTime AND ws.endedAt > :startTime)
-            )')
-                ->setParameter('roomId', $roomId)
-                ->setParameter('weekDay', $weekDay)
-                ->setParameter('startTime', $startTime->format('H:i:s'))
-                ->setParameter('endTime', $endTime->format('H:i:s'))
-                ->orderBy('ws.startedAt', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds all schedules for a specific week and room.
-         *
-         * @param int $roomId The ID of the room.
-         *
-         * @return array Returns an array grouped by days of the week with schedules.
-         */
-        public function findGroupedByWeekDay(int $roomId): array
-        {
-            $schedules = $this->findByRoom($roomId);
-            $grouped = [];
-
-            foreach ($schedules as $schedule) {
-                $grouped[$schedule->getWeekDay()][] = $schedule;
-            }
-
-            return $grouped;
         }
     }

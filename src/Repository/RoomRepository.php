@@ -2,121 +2,40 @@
 
     namespace App\Repository;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Repository\Adapter\SymfonyRepository;
+    use App\Core\Repository\RoomRepositoryInterface;
     use App\Entity\Room;
-    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+    use DateTime;
     use Doctrine\Persistence\ManagerRegistry;
 
     /**
      * Repository class for the Room entity.
      *
-     * @extends ServiceEntityRepository<Room>
+     * @extends SymfonyRepository<Room>
      */
-    class RoomRepository extends ServiceEntityRepository
+    class RoomRepository extends SymfonyRepository implements RoomRepositoryInterface
     {
-        /**
-         * Constructor for the Room repository.
-         *
-         * @param ManagerRegistry $registry The manager registry for the repository.
-         */
         public function __construct(ManagerRegistry $registry)
         {
             parent::__construct($registry, Room::class);
         }
 
         /**
-         * Finds all active rooms.
+         * @inheritDoc
          *
-         * @return Room[] Returns an array of active Room objects.
+         * @throws \Exception
          */
-        public function findActiveRooms(): array
+        protected function hydrateObject(array $data, ObjectModel $object): void
         {
-            return $this->createQueryBuilder('r')
-                ->andWhere('r.status = :status')
-                ->setParameter('status', 'active')
-                ->orderBy('r.name', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds a room by its name.
-         *
-         * @param string $name The name of the room.
-         * @return Room|null Returns the Room object if found, or null otherwise.
-         */
-        public function findByName(string $name): ?Room
-        {
-            return $this->createQueryBuilder('r')
-                ->andWhere('r.name = :name')
-                ->setParameter('name', $name)
-                ->getQuery()
-                ->getOneOrNullResult();
-        }
-
-        /**
-         * Finds rooms by capacity range.
-         *
-         * @param int $minCapacity The minimum capacity.
-         * @param int $maxCapacity The maximum capacity.
-         * @return Room[] Returns an array of Room objects within the capacity range.
-         */
-        public function findByCapacityRange(int $minCapacity, int $maxCapacity): array
-        {
-            return $this->createQueryBuilder('r')
-                ->andWhere('r.capacity BETWEEN :min AND :max')
-                ->setParameter('min', $minCapacity)
-                ->setParameter('max', $maxCapacity)
-                ->orderBy('r.capacity', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds rooms that are inactive.
-         *
-         * @return Room[] Returns an array of inactive Room objects.
-         */
-        public function findInactiveRooms(): array
-        {
-            return $this->createQueryBuilder('r')
-                ->andWhere('r.status = :status')
-                ->setParameter('status', 'inactive')
-                ->orderBy('r.name', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds rooms with specific dimensions.
-         *
-         * @param float $minWidth The minimum width.
-         * @param float $minLength The minimum length.
-         * @return Room[] Returns an array of Room objects that meet the dimensions.
-         */
-        public function findByDimensions(float $minWidth, float $minLength): array
-        {
-            return $this->createQueryBuilder('r')
-                ->andWhere('r.width >= :minWidth')
-                ->andWhere('r.length >= :minLength')
-                ->setParameter('minWidth', $minWidth)
-                ->setParameter('minLength', $minLength)
-                ->orderBy('r.name', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds the total number of active rooms.
-         *
-         * @return int Returns the total count of active rooms.
-         */
-        public function countActiveRooms(): int
-        {
-            return (int) $this->createQueryBuilder('r')
-                ->select('COUNT(r.id)')
-                ->andWhere('r.status = :status')
-                ->setParameter('status', 'active')
-                ->getQuery()
-                ->getSingleScalarResult();
+            if (isset($data['name'])) $object->setName($data['name']);
+            if (isset($data['capacity'])) $object->setCapacity($data['capacity']);
+            if (isset($data['width'])) $object->setWidth($data['width']);
+            if (isset($data['length'])) $object->setLength($data['length']);
+            if (isset($data['description'])) $object->setDescription($data['description']);
+            if (isset($data['photo'])) $object->setPhoto($data['photo']);
+            if (isset($data['status'])) $object->setStatus($data['status']);
+            if (isset($data['createdAt'])) $object->setCreatedAt(new DateTime($data['createdAt']));
+            if (isset($data['updatedAt'])) $object->setUpdatedAt(new DateTime($data['updatedAt']));
         }
     }

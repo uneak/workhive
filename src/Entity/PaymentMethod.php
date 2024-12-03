@@ -2,8 +2,10 @@
 
     namespace App\Entity;
 
+    use App\Core\Model\PaymentMethodModel;
+    use App\Core\Model\UserModel;
+    use App\Core\Services\Payment\Options\PaymentOptionsInterface;
     use App\Repository\PaymentMethodRepository;
-    use App\Services\Payment\Options\PaymentOptionsInterface;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
 
@@ -12,7 +14,7 @@
      */
     #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
     #[ORM\Table(name: 'payment_methods')]
-    class PaymentMethod
+    class PaymentMethod implements PaymentMethodModel
     {
         /**
          * The unique identifier of the payment method.
@@ -27,11 +29,11 @@
         /**
          * The user associated with this payment method.
          *
-         * @var User
+         * @var UserModel
          */
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
-        private User $user;
+        private UserModel $user;
 
         /**
          * The label or name of the payment method (e.g., "Visa", "PayPal").
@@ -94,9 +96,9 @@
         /**
          * Get the user associated with this payment method.
          *
-         * @return User|null
+         * @return UserModel|null
          */
-        public function getUser(): ?User
+        public function getUser(): ?UserModel
         {
             return $this->user;
         }
@@ -104,10 +106,10 @@
         /**
          * Set the user associated with this payment method.
          *
-         * @param User|null $user
+         * @param UserModel|null $user
          * @return $this
          */
-        public function setUser(?User $user): static
+        public function setUser(?UserModel $user): static
         {
             $this->user = $user;
 

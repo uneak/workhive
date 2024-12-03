@@ -2,7 +2,10 @@
 
     namespace App\Entity;
 
+    use App\Core\Model\DateSchedulesModel;
+    use App\Core\Model\RoomModel;
     use App\Repository\DateSchedulesRepository;
+    use DateTimeInterface;
     use Doctrine\DBAL\Types\Types;
     use Doctrine\ORM\Mapping as ORM;
 
@@ -11,7 +14,7 @@
      */
     #[ORM\Entity(repositoryClass: DateSchedulesRepository::class)]
     #[ORM\Table(name: 'date_schedules')]
-    class DateSchedules
+    class DateSchedules implements DateSchedulesModel
     {
         /**
          * The unique identifier of the schedule.
@@ -37,7 +40,7 @@
          * @var \DateTimeInterface|null
          */
         #[ORM\Column(type: Types::DATE_MUTABLE)]
-        private ?\DateTimeInterface $date = null;
+        private ?DateTimeInterface $date = null;
 
         /**
          * The starting time of the schedule.
@@ -45,7 +48,7 @@
          * @var \DateTimeInterface|null
          */
         #[ORM\Column(type: Types::TIME_MUTABLE)]
-        private ?\DateTimeInterface $startedAt = null;
+        private ?DateTimeInterface $startedAt = null;
 
         /**
          * The ending time of the schedule.
@@ -53,7 +56,7 @@
          * @var \DateTimeInterface|null
          */
         #[ORM\Column(type: Types::TIME_MUTABLE)]
-        private ?\DateTimeInterface $endedAt = null;
+        private ?DateTimeInterface $endedAt = null;
 
         /**
          * Indicates whether the schedule is open during the specified time.
@@ -111,7 +114,7 @@
          *
          * @return \DateTimeInterface|null
          */
-        public function getDate(): ?\DateTimeInterface
+        public function getDate(): ?DateTimeInterface
         {
             return $this->date;
         }
@@ -123,7 +126,7 @@
          *
          * @return $this
          */
-        public function setDate(\DateTimeInterface $date): static
+        public function setDate(DateTimeInterface $date): static
         {
             $this->date = $date;
 
@@ -135,7 +138,7 @@
          *
          * @return \DateTimeInterface|null
          */
-        public function getStartedAt(): ?\DateTimeInterface
+        public function getStartedAt(): ?DateTimeInterface
         {
             return $this->startedAt;
         }
@@ -147,7 +150,7 @@
          *
          * @return $this
          */
-        public function setStartedAt(\DateTimeInterface $startedAt): static
+        public function setStartedAt(DateTimeInterface $startedAt): static
         {
             $this->startedAt = $startedAt;
 
@@ -159,7 +162,7 @@
          *
          * @return \DateTimeInterface|null
          */
-        public function getEndedAt(): ?\DateTimeInterface
+        public function getEndedAt(): ?DateTimeInterface
         {
             return $this->endedAt;
         }
@@ -171,7 +174,7 @@
          *
          * @return $this
          */
-        public function setEndedAt(\DateTimeInterface $endedAt): static
+        public function setEndedAt(DateTimeInterface $endedAt): static
         {
             $this->endedAt = $endedAt;
 
@@ -205,9 +208,9 @@
         /**
          * Get the room associated with this schedule.
          *
-         * @return Room|null
+         * @return RoomModel|null
          */
-        public function getRoom(): ?Room
+        public function getRoom(): ?RoomModel
         {
             return $this->room;
         }
@@ -215,11 +218,11 @@
         /**
          * Set the room associated with this schedule.
          *
-         * @param Room|null $room
+         * @param RoomModel $room
          *
          * @return $this
          */
-        public function setRoom(?Room $room): static
+        public function setRoom(?RoomModel $room): static
         {
             $this->room = $room;
 

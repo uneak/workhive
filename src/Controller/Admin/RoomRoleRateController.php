@@ -2,99 +2,132 @@
 
     namespace App\Controller\Admin;
 
-    use App\Entity\Room;
+    use App\Core\Model\ObjectModel;
+    use App\Core\Services\Manager\RoomManager;
+    use App\Core\Services\Manager\RoomRoleRateManager;
     use App\Entity\RoomRoleRate;
     use App\Form\RoomRoleRateType;
-    use Doctrine\ORM\EntityManagerInterface;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\Form\FormInterface;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\Routing\Attribute\Route;
 
-    #[Route('admin/room/{idRoom}/rate', name: 'app_admin_room_rate_')]
+    #[Route('admin/room/{idRoom}/rate', name: 'app_admin_room_role_rate_')]
     class RoomRoleRateController extends AbstractController
     {
         #[Route('/', name: 'list', methods: ['GET'])]
-        public function index(EntityManagerInterface $em, int $idRoom): Response
+        public function index(RoomRoleRateManager $manager, RoomManager $roomManager, int $idRoom): Response
         {
-            $room = $em->getRepository(Room::class)->find($idRoom);
-            $roomRoleRates = $em->getRepository(RoomRoleRate::class)->findBy(['room' => $room]);
-
-            return $this->render('admin/room/rate/list.html.twig', [
-                'room' => $room,
-                'roomRoleRates' => $roomRoleRates
+            return $this->render('admin/room/role_rate/list.html.twig', [
+                'roomRoleRates' => $manager->getByRoom($idRoom),
+                'room'          => $roomManager->get($idRoom)
             ]);
         }
 
         #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-        public function create(EntityManagerInterface $em, Request $request, int $idRoom): Response
-        {
-            $room = $em->getRepository(Room::class)->find($idRoom);
-            $action = $this->generateUrl('app_admin_room_rate_new', ['idRoom' => $idRoom]);
-
+        public function create(
+            RoomRoleRateManager $manager,
+            RoomManager $roomManager,
+            Request $request,
+            int $idRoom
+        ): Response {
+            $room = $roomManager->get($idRoom);
             $roomRoleRate = new RoomRoleRate();
             $roomRoleRate->setRoom($room);
 
-            return $this->handleForm($em, $request, $action, $roomRoleRate);
-        }
+            /** @var RoomRoleRate $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                RoomRoleRateType::class,
+                $roomRoleRate,
+                [
+                    'action' => $this->generateUrl('app_admin_room_role_rate_new', ['idRoom' => $room->getId()]),
+                    'method' => 'POST'
+                ]
+            );
 
-        #[Route('/{id}', name: 'show', methods: ['GET'])]
-        public function show(EntityManagerInterface $em, int $id): Response
-        {
-            $roomRoleRate = $em->getRepository(RoomRoleRate::class)->find($id);
+            if ($isSubmitted) {
+                $manager->save($data, true);
 
-            return $this->render('admin/room/rate/show.html.twig', [
-                'roomRoleRate' => $roomRoleRate,
+                return $this->redirectToRoute('app_admin_room_role_rate_list',
+                    ['idRoom' => $room->getId()], Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->render('admin/room/role_rate/form.html.twig', [
+                'form'         => $form,
+                'roomRoleRate' => $data
             ]);
         }
 
         #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-        public function edit(EntityManagerInterface $em, Request $request, int $idRoom, int $id): Response
-        {
-            $roomRoleRate = $em->getRepository(RoomRoleRate::class)->find($id);
-            $action = $this->generateUrl('app_admin_room_rate_edit', ['id' => $id, 'idRoom' => $idRoom]);
+        public function edit(
+            RoomRoleRateManager $manager,
+            Request $request,
+            int $idRoom,
+            int $id
+        ): Response {
+            /** @var RoomRoleRate $data */
+            [$isSubmitted, $form, $data] = $this->handleForm(
+                $request,
+                RoomRoleRateType::class,
+                $manager->get($id),
+                [
+                    'action' => $this->generateUrl('app_admin_room_role_rate_edit',
+                        ['id' => $id, 'idRoom' => $idRoom]),
+                    'method' => 'POST'
+                ]
+            );
 
-            return $this->handleForm($em, $request, $action, $roomRoleRate);
+            if ($isSubmitted) {
+                $manager->save($data, true);
+
+                return $this->redirectToRoute('app_admin_room_role_rate_list',
+                    ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->render('admin/room/role_rate/form.html.twig', [
+                'form'         => $form,
+                'roomRoleRate' => $data
+            ]);
         }
 
         #[Route('/{id}', name: 'delete', methods: ['POST'])]
-        public function delete(EntityManagerInterface $em, Request $request, int $idRoom, int $id): Response
-        {
-            $roomRoleRate = $em->getRepository(RoomRoleRate::class)->find($id);
-
-            if ($this->isCsrfTokenValid('delete' . $roomRoleRate->getId(), $request->getPayload()->getString('_token'))) {
-                $em->remove($roomRoleRate);
-                $em->flush();
+        public function delete(
+            RoomRoleRateManager $manager,
+            Request $request,
+            int $idRoom,
+            int $id
+        ): Response {
+            if ($this->isCsrfTokenValid('delete' . $id, $request->getPayload()->getString('_token'))) {
+                $manager->remove($manager->get($id), true);
             }
 
-            return $this->redirectToRoute('app_admin_room_rate_list', ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_room_role_rate_list',
+                ['idRoom' => $idRoom], Response::HTTP_SEE_OTHER);
         }
 
+        /**
+         * @param Request     $request
+         * @param string      $type
+         * @param ObjectModel $data
+         * @param array       $options
+         *
+         * @return array{0: bool, 1: FormInterface, 2: ObjectModel}
+         */
         protected function handleForm(
-            EntityManagerInterface $em,
             Request $request,
-            string $action,
-            RoomRoleRate $roomRoleRate,
-            ?string $redirect = null
-        ): Response {
-            $form = $this->createForm(RoomRoleRateType::class, $roomRoleRate, ['action' => $action, 'method' => 'POST']);
-
+            string $type,
+            ObjectModel $data,
+            array $options,
+        ): array {
+            $form = $this->createForm($type, $data, $options);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $em->persist($roomRoleRate);
-                $em->flush();
-
-                if ($redirect) {
-                    return $this->redirect($redirect);
-                } else {
-                    return $this->redirectToRoute('app_admin_room_rate_list', ['idRoom' => $roomRoleRate->getRoom()->getId()], Response::HTTP_SEE_OTHER);
-                }
-            }
-
-            return $this->render('admin/room/rate/form.html.twig', [
-                'form' => $form,
-                'roomRoleRate' => $roomRoleRate,
-            ]);
+            return [
+                $form->isSubmitted() && $form->isValid(),
+                $form,
+                $form->getData()
+            ];
         }
     }

@@ -2,6 +2,8 @@
 
     namespace App\Entity;
 
+    use App\Core\Model\RoomModel;
+    use App\Core\Model\WeekSchedulesModel;
     use App\Repository\WeekSchedulesRepository;
     use DateTimeInterface;
     use Doctrine\DBAL\Types\Types;
@@ -12,7 +14,7 @@
      */
     #[ORM\Entity(repositoryClass: WeekSchedulesRepository::class)]
     #[ORM\Table(name: 'week_schedules')]
-    class WeekSchedules
+    class WeekSchedules implements WeekSchedulesModel
     {
         /**
          * The unique identifier of the weekly schedule.
@@ -51,11 +53,11 @@
         /**
          * The room associated with this schedule.
          *
-         * @var Room|null
+         * @var RoomModel|null
          */
-        #[ORM\ManyToOne(inversedBy: 'weekSchedules')]
+        #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'weekSchedules')]
         #[ORM\JoinColumn(nullable: false)]
-        private ?Room $room = null;
+        private ?RoomModel $room = null;
 
         /**
          * Get the unique identifier of the weekly schedule.
@@ -142,9 +144,9 @@
         /**
          * Get the room associated with this schedule.
          *
-         * @return Room|null
+         * @return RoomModel|null
          */
-        public function getRoom(): ?Room
+        public function getRoom(): ?RoomModel
         {
             return $this->room;
         }
@@ -152,11 +154,11 @@
         /**
          * Set the room associated with this schedule.
          *
-         * @param Room|null $room
+         * @param RoomModel|null $room
          *
          * @return $this
          */
-        public function setRoom(?Room $room): static
+        public function setRoom(?RoomModel $room): static
         {
             $this->room = $room;
 

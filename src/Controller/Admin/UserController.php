@@ -1,97 +1,139 @@
 <?php
 
-    namespace App\Controller\Admin;
+namespace App\Controller\Admin;
 
-    use App\Entity\User;
-    use App\Form\UserType;
-    use App\Repository\UserRepository;
-    use Doctrine\ORM\EntityManagerInterface;
-    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-    use Symfony\Component\HttpFoundation\Request;
-    use Symfony\Component\HttpFoundation\Response;
-    use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-    use Symfony\Component\Routing\Attribute\Route;
+use App\Core\Model\ObjectModel;
+use App\Core\Services\Manager\EquipmentManager;
+use App\Core\Services\Manager\UserManager;
+use App\Entity\User;
+use App\Form\UserType;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Routing\Attribute\Route;
 
-    #[Route('admin/user', name: 'app_admin_user_')]
-    class UserController extends AbstractController
+#[Route('admin/user', name: 'app_admin_user_')]
+class UserController extends AbstractController
+{
+    #[Route('/', name: 'list', methods: ['GET'])]
+    public function index(UserManager $manager): Response
     {
-        #[Route('/', name: 'list', methods: ['GET'])]
-        public function index(UserRepository $repository): Response
-        {
-            return $this->render('admin/user/list.html.twig', [
-                'users' => $repository->findAll()
-            ]);
-        }
+        return $this->render('admin/user/list.html.twig', [
+            'users' => $manager->all()
+        ]);
+    }
 
-        #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-        public function create(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): Response
-        {
-            $user = new User();
-            $action = $this->generateUrl('app_admin_user_new');
-            return $this->handleForm($em, $request, $passwordHasher, $action, $user);
-        }
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    public function create(
+        UserManager $manager,
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
+        $user = new User();
 
-        #[Route('/{id}', name: 'show', methods: ['GET'])]
-        public function show(UserRepository $repository, int $id): Response
-        {
-            return $this->render('admin/user/show.html.twig', [
-                'user' => $repository->find($id),
-            ]);
-        }
+        /** @var User $data */
+        [$isSubmitted, $form, $data] = $this->handleForm(
+            $request,
+            UserType::class,
+            $user,
+            [
+                'action' => $this->generateUrl('app_admin_user_new'),
+                'method' => 'POST'
+            ],
+        );
 
-        #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-        public function edit(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher, int $id): Response
-        {
-            $user = $em->getRepository(User::class)->find($id);
-            $action = $this->generateUrl('app_admin_user_edit', ['id' => $id]);
+        if ($isSubmitted) {
+            $plainPassword = $data->getPassword();
+            $hashedPassword = $passwordHasher->hashPassword($data, $plainPassword);
+            $data->setPassword($hashedPassword);
 
-            return $this->handleForm($em, $request, $passwordHasher, $action, $user);
-        }
-
-        #[Route('/{id}', name: 'delete', methods: ['POST'])]
-        public function delete(EntityManagerInterface $em, Request $request, int $id): Response
-        {
-            $user = $em->getRepository(User::class)->find($id);
-
-            if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->getPayload()->getString('_token'))) {
-                $em->remove($user);
-                $em->flush();
-            }
-
+            $manager->save($data, true);
             return $this->redirectToRoute('app_admin_user_list', [], Response::HTTP_SEE_OTHER);
         }
 
-        protected function handleForm(
-            EntityManagerInterface $em,
-            Request $request,
-            UserPasswordHasherInterface $passwordHasher,
-            string $action,
-            User $user,
-            ?string $redirect = null
-        ): Response {
-            $form = $this->createForm(UserType::class, $user, ['action' => $action, 'method' => 'POST']);
-
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-
-                $plainPassword = $user->getPassword();
-                $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
-                $user->setPassword($hashedPassword);
-
-                $em->persist($user);
-                $em->flush();
-
-                if ($redirect) {
-                    return $this->redirect($redirect);
-                } else {
-                    return $this->redirectToRoute('app_admin_user_list');
-                }
-            }
-
-            return $this->render('admin/user/form.html.twig', [
-                'form' => $form,
-                'user' => $user,
-            ]);
-        }
+        return $this->render('admin/user/form.html.twig', [
+            'form' => $form,
+            'user' => $data
+        ]);
     }
+
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(UserManager $manager, int $id): Response
+    {
+        return $this->render('admin/user/show.html.twig', [
+            'user' => $manager->get($id),
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(
+        UserManager $manager,
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        int $id
+    ): Response {
+        /** @var User $data */
+        [$isSubmitted, $form, $data] = $this->handleForm(
+            $request,
+            UserType::class,
+            $manager->get($id),
+            [
+                'action' => $this->generateUrl('app_admin_user_edit', ['id' => $id]),
+                'method' => 'POST'
+            ],
+        );
+
+        if ($isSubmitted) {
+            $plainPassword = $data->getPassword();
+            $hashedPassword = $passwordHasher->hashPassword($data, $plainPassword);
+            $data->setPassword($hashedPassword);
+
+            $manager->save($data, true);
+            return $this->redirectToRoute('app_admin_user_list', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('admin/user/form.html.twig', [
+            'form' => $form,
+            'user' => $data
+        ]);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(
+        UserManager $manager,
+        Request $request,
+        int $id
+    ): Response {
+        if ($this->isCsrfTokenValid('delete' . $id, $request->getPayload()->getString('_token'))) {
+            $manager->remove($manager->get($id), true);
+        }
+
+        return $this->redirectToRoute('app_admin_user_list', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * @param Request $request
+     * @param string $type
+     * @param ObjectModel $data
+     * @param array $options
+     *
+     * @return array{0: bool, 1: FormInterface, 2: ObjectModel}
+     */
+    protected function handleForm(
+        Request $request,
+        string $type,
+        ObjectModel $data,
+        array $options,
+    ): array {
+        $form = $this->createForm($type, $data, $options);
+        $form->handleRequest($request);
+
+        return [
+            $form->isSubmitted() && $form->isValid(),
+            $form,
+            $form->getData()
+        ];
+    }
+}

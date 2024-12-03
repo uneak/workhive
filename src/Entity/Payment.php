@@ -2,8 +2,12 @@
 
     namespace App\Entity;
 
+    use App\Core\Enum\PaymentStatus;
+    use App\Core\Model\PaymentMethodModel;
+    use App\Core\Model\PaymentModel;
+    use App\Core\Model\ReservationModel;
     use App\Repository\PaymentRepository;
-    use App\Enum\PaymentStatus;
+    use DateTime;
     use Doctrine\ORM\Mapping as ORM;
 
     /**
@@ -11,7 +15,7 @@
      */
     #[ORM\Entity(repositoryClass: PaymentRepository::class)]
     #[ORM\Table(name: 'payments')]
-    class Payment
+    class Payment implements PaymentModel
     {
         /**
          * The unique identifier of the payment.
@@ -26,20 +30,20 @@
         /**
          * The reservation associated with this payment.
          *
-         * @var Reservation|null
+         * @var ReservationModel|null
          */
         #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'payments')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        private ?Reservation $reservation = null;
+        private ?ReservationModel $reservation = null;
 
         /**
          * The payment method used for this payment.
          *
-         * @var PaymentMethod|null
+         * @var PaymentMethodModel|null
          */
         #[ORM\ManyToOne(targetEntity: PaymentMethod::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        private ?PaymentMethod $paymentMethod = null;
+        private ?PaymentMethodModel $paymentMethod = null;
 
         /**
          * The amount paid.
@@ -63,7 +67,7 @@
          * @var \DateTime
          */
         #[ORM\Column(type: 'datetime')]
-        private \DateTime $createdAt;
+        private DateTime $createdAt;
 
         /**
          * The timestamp when the payment was last updated.
@@ -71,14 +75,14 @@
          * @var \DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
-        private ?\DateTime $updatedAt = null;
+        private ?DateTime $updatedAt = null;
 
         /**
          * Initializes the payment with default values.
          */
         public function __construct()
         {
-            $this->createdAt = new \DateTime();
+            $this->createdAt = new DateTime();
             $this->status = PaymentStatus::PENDING;
         }
 
@@ -95,9 +99,9 @@
         /**
          * Get the reservation associated with this payment.
          *
-         * @return Reservation|null The associated reservation.
+         * @return ReservationModel|null The associated reservation.
          */
-        public function getReservation(): ?Reservation
+        public function getReservation(): ?ReservationModel
         {
             return $this->reservation;
         }
@@ -105,10 +109,10 @@
         /**
          * Set the reservation associated with this payment.
          *
-         * @param Reservation|null $reservation The reservation to associate.
+         * @param ReservationModel|null $reservation The reservation to associate.
          * @return $this
          */
-        public function setReservation(?Reservation $reservation): self
+        public function setReservation(?ReservationModel $reservation): static
         {
             $this->reservation = $reservation;
 
@@ -118,9 +122,9 @@
         /**
          * Get the payment method used for this payment.
          *
-         * @return PaymentMethod|null The payment method.
+         * @return PaymentMethodModel|null The payment method.
          */
-        public function getPaymentMethod(): ?PaymentMethod
+        public function getPaymentMethod(): ?PaymentMethodModel
         {
             return $this->paymentMethod;
         }
@@ -128,10 +132,10 @@
         /**
          * Set the payment method used for this payment.
          *
-         * @param PaymentMethod|null $paymentMethod The payment method to set.
+         * @param PaymentMethodModel|null $paymentMethod The payment method to set.
          * @return $this
          */
-        public function setPaymentMethod(?PaymentMethod $paymentMethod): self
+        public function setPaymentMethod(?PaymentMethodModel $paymentMethod): static
         {
             $this->paymentMethod = $paymentMethod;
 
@@ -154,7 +158,7 @@
          * @param float $amount The amount to set.
          * @return $this
          */
-        public function setAmount(float $amount): self
+        public function setAmount(float $amount): static
         {
             $this->amount = $amount;
 
@@ -177,7 +181,7 @@
          * @param PaymentStatus $status The status to set.
          * @return $this
          */
-        public function setStatus(PaymentStatus $status): self
+        public function setStatus(PaymentStatus $status): static
         {
             $this->status = $status;
 
@@ -189,7 +193,7 @@
          *
          * @return \DateTime The creation timestamp.
          */
-        public function getCreatedAt(): \DateTime
+        public function getCreatedAt(): DateTime
         {
             return $this->createdAt;
         }
@@ -200,7 +204,7 @@
          * @param \DateTime $createdAt The creation timestamp.
          * @return $this
          */
-        public function setCreatedAt(\DateTime $createdAt): self
+        public function setCreatedAt(DateTime $createdAt): static
         {
             $this->createdAt = $createdAt;
 
@@ -212,7 +216,7 @@
          *
          * @return \DateTime|null The last update timestamp.
          */
-        public function getUpdatedAt(): ?\DateTime
+        public function getUpdatedAt(): ?DateTime
         {
             return $this->updatedAt;
         }
@@ -223,7 +227,7 @@
          * @param \DateTime|null $updatedAt The update timestamp.
          * @return $this
          */
-        public function setUpdatedAt(?\DateTime $updatedAt): self
+        public function setUpdatedAt(?DateTime $updatedAt): static
         {
             $this->updatedAt = $updatedAt;
 

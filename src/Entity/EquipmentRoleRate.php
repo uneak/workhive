@@ -2,7 +2,9 @@
 
     namespace App\Entity;
 
-    use App\Enum\UserRole;
+    use App\Core\Enum\UserRole;
+    use App\Core\Model\EquipmentModel;
+    use App\Core\Model\EquipmentRoleRateModel;
     use App\Repository\EquipmentRoleRateRepository;
     use Doctrine\ORM\Mapping as ORM;
 
@@ -11,7 +13,7 @@
      */
     #[ORM\Entity(repositoryClass: EquipmentRoleRateRepository::class)]
     #[ORM\Table(name: 'equipment_role_rate')]
-    class EquipmentRoleRate
+    class EquipmentRoleRate implements EquipmentRoleRateModel
     {
         /**
          * The unique identifier of the equipment role rate.
@@ -71,10 +73,11 @@
         /**
          * Set the equipment associated with this rate.
          *
-         * @param Equipment $equipment
+         * @param EquipmentModel $equipment
+         *
          * @return $this
          */
-        public function setEquipment(Equipment $equipment): self
+        public function setEquipment(EquipmentModel $equipment): static
         {
             $this->equipment = $equipment;
 
@@ -95,9 +98,10 @@
          * Set the role of the user for which this rate applies.
          *
          * @param UserRole $userRole
+         *
          * @return $this
          */
-        public function setUserRole(UserRole $userRole): self
+        public function setUserRole(UserRole $userRole): static
         {
             $this->userRole = $userRole;
 
@@ -118,9 +122,10 @@
          * Set the hourly rate for using the equipment.
          *
          * @param float $hourlyRate
+         *
          * @return $this
          */
-        public function setHourlyRate(float $hourlyRate): self
+        public function setHourlyRate(float $hourlyRate): static
         {
             $this->hourlyRate = $hourlyRate;
 

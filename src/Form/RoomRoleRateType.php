@@ -2,9 +2,9 @@
 
     namespace App\Form;
 
-    use App\Entity\RoomRoleRate;
+    use App\Core\Enum\UserRole;
     use App\Entity\Room;
-    use App\Enum\UserRole;
+    use App\Entity\RoomRoleRate;
     use Symfony\Bridge\Doctrine\Form\Type\EntityType;
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\Extension\Core\Type\ChoiceType;

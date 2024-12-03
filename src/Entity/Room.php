@@ -2,7 +2,11 @@
 
     namespace App\Entity;
 
-    use App\Enum\Status;
+    use App\Core\Enum\Status;
+    use App\Core\Model\DateSchedulesModel;
+    use App\Core\Model\ReservationModel;
+    use App\Core\Model\RoomModel;
+    use App\Core\Model\WeekSchedulesModel;
     use App\Repository\RoomRepository;
     use DateTime;
     use Doctrine\Common\Collections\ArrayCollection;
@@ -15,7 +19,7 @@
      */
     #[ORM\Entity(repositoryClass: RoomRepository::class)]
     #[ORM\Table(name: 'rooms')]
-    class Room
+    class Room implements RoomModel
     {
         /**
          * The unique identifier of the room.
@@ -110,7 +114,7 @@
         /**
          * Reservations associated with this room.
          *
-         * @var Collection<int, Reservation>
+         * @var Collection<int, ReservationModel>
          */
         #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'room', cascade: ['persist', 'remove'])]
         private Collection $reservations;
@@ -118,7 +122,7 @@
         /**
          * Weekly schedules associated with this room.
          *
-         * @var Collection<int, WeekSchedules>
+         * @var Collection<int, WeekSchedulesModel>
          */
         #[ORM\OneToMany(targetEntity: WeekSchedules::class, mappedBy: 'room', orphanRemoval: true)]
         private Collection $weekSchedules;
@@ -126,7 +130,7 @@
         /**
          * Date-specific schedules associated with this room.
          *
-         * @var Collection<int, DateSchedules>
+         * @var Collection<int, DateSchedulesModel>
          */
         #[ORM\OneToMany(targetEntity: DateSchedules::class, mappedBy: 'room', orphanRemoval: true)]
         private Collection $dateSchedules;
@@ -170,7 +174,7 @@
          *
          * @return $this
          */
-        public function setName(string $name): self
+        public function setName(string $name): static
         {
             $this->name = $name;
 
@@ -194,7 +198,7 @@
          *
          * @return $this
          */
-        public function setCapacity(int $capacity): self
+        public function setCapacity(int $capacity): static
         {
             $this->capacity = $capacity;
 
@@ -218,7 +222,7 @@
          *
          * @return $this
          */
-        public function setWidth(float $width): self
+        public function setWidth(float $width): static
         {
             $this->width = $width;
 
@@ -242,7 +246,7 @@
          *
          * @return $this
          */
-        public function setLength(float $length): self
+        public function setLength(float $length): static
         {
             $this->length = $length;
 
@@ -276,7 +280,7 @@
          *
          * @return $this
          */
-        public function setDescription(?string $description): self
+        public function setDescription(?string $description): static
         {
             $this->description = $description;
 
@@ -300,7 +304,7 @@
          *
          * @return $this
          */
-        public function setPhoto(?string $photo): self
+        public function setPhoto(?string $photo): static
         {
             $this->photo = $photo;
 
@@ -324,7 +328,7 @@
          *
          * @return $this
          */
-        public function setStatus(Status $status): self
+        public function setStatus(Status $status): static
         {
             $this->status = $status;
 
@@ -344,7 +348,7 @@
         /**
          * Get the reservations associated with the room.
          *
-         * @return Collection<int, Reservation>
+         * @return Collection<int, ReservationModel>
          */
         public function getReservations(): Collection
         {
@@ -354,11 +358,11 @@
         /**
          * Add a reservation to the room.
          *
-         * @param Reservation $reservation
+         * @param ReservationModel $reservation
          *
          * @return $this
          */
-        public function addReservation(Reservation $reservation): self
+        public function addReservation(ReservationModel $reservation): static
         {
             if (!$this->reservations->contains($reservation)) {
                 $this->reservations->add($reservation);
@@ -371,11 +375,11 @@
         /**
          * Remove a reservation from the room.
          *
-         * @param Reservation $reservation
+         * @param ReservationModel $reservation
          *
          * @return $this
          */
-        public function removeReservation(Reservation $reservation): self
+        public function removeReservation(ReservationModel $reservation): static
         {
             if ($this->reservations->removeElement($reservation)) {
                 if ($reservation->getRoom() === $this) {
@@ -389,7 +393,7 @@
         /**
          * Get the collection of weekly schedules associated with the room.
          *
-         * @return Collection<int, WeekSchedules> A collection of WeekSchedules objects.
+         * @return Collection<int, WeekSchedulesModel> A collection of WeekSchedules objects.
          */
         public function getWeekSchedules(): Collection
         {
@@ -399,11 +403,11 @@
         /**
          * Add a weekly schedule to the room.
          *
-         * @param WeekSchedules $weekSchedule The weekly schedule to add.
+         * @param WeekSchedulesModel $weekSchedule The weekly schedule to add.
          *
          * @return $this
          */
-        public function addWeekSchedule(WeekSchedules $weekSchedule): static
+        public function addWeekSchedule(WeekSchedulesModel $weekSchedule): static
         {
             if (!$this->weekSchedules->contains($weekSchedule)) {
                 $this->weekSchedules->add($weekSchedule);
@@ -416,11 +420,11 @@
         /**
          * Remove a weekly schedule from the room.
          *
-         * @param WeekSchedules $weekSchedule The weekly schedule to remove.
+         * @param WeekSchedulesModel $weekSchedule The weekly schedule to remove.
          *
          * @return $this
          */
-        public function removeWeekSchedule(WeekSchedules $weekSchedule): static
+        public function removeWeekSchedule(WeekSchedulesModel $weekSchedule): static
         {
             if ($this->weekSchedules->removeElement($weekSchedule)) {
                 // Set the owning side to null (unless already changed).
@@ -435,7 +439,7 @@
         /**
          * Get the collection of date-specific schedules associated with the room.
          *
-         * @return Collection<int, DateSchedules> A collection of DateSchedules objects.
+         * @return Collection<int, DateSchedulesModel> A collection of DateSchedules objects.
          */
         public function getDateSchedules(): Collection
         {
@@ -445,11 +449,11 @@
         /**
          * Add a date-specific schedule to the room.
          *
-         * @param DateSchedules $dateSchedule The date-specific schedule to add.
+         * @param DateSchedulesModel $dateSchedule The date-specific schedule to add.
          *
          * @return $this
          */
-        public function addDateSchedule(DateSchedules $dateSchedule): static
+        public function addDateSchedule(DateSchedulesModel $dateSchedule): static
         {
             if (!$this->dateSchedules->contains($dateSchedule)) {
                 $this->dateSchedules->add($dateSchedule);
@@ -462,11 +466,11 @@
         /**
          * Remove a date-specific schedule from the room.
          *
-         * @param DateSchedules $dateSchedule The date-specific schedule to remove.
+         * @param DateSchedulesModel $dateSchedule The date-specific schedule to remove.
          *
          * @return $this
          */
-        public function removeDateSchedule(DateSchedules $dateSchedule): static
+        public function removeDateSchedule(DateSchedulesModel $dateSchedule): static
         {
             if ($this->dateSchedules->removeElement($dateSchedule)) {
                 // Set the owning side to null (unless already changed).
@@ -484,7 +488,7 @@
          *
          * @return \DateTime
          */
-        public function getCreatedAt(): \DateTime
+        public function getCreatedAt(): DateTime
         {
             return $this->createdAt;
         }
@@ -494,7 +498,7 @@
          *
          * @return \DateTime|null
          */
-        public function getUpdatedAt(): ?\DateTime
+        public function getUpdatedAt(): ?DateTime
         {
             return $this->updatedAt;
         }
@@ -506,7 +510,7 @@
          *
          * @return void
          */
-        public function setCreatedAt(\DateTime $createdAt): void
+        public function setCreatedAt(DateTime $createdAt): void
         {
             $this->createdAt = $createdAt;
         }
@@ -517,7 +521,7 @@
          * @param \DateTime|null $updatedAt
          * @return $this
          */
-        public function setUpdatedAt(?\DateTime $updatedAt): self
+        public function setUpdatedAt(?DateTime $updatedAt): static
         {
             $this->updatedAt = $updatedAt;
 

@@ -2,7 +2,11 @@
 
     namespace App\Entity;
 
+    use App\Core\Model\EquipmentModel;
+    use App\Core\Model\RoomEquipmentModel;
+    use App\Core\Model\RoomModel;
     use App\Repository\RoomEquipmentRepository;
+    use DateTime;
     use Doctrine\ORM\Mapping as ORM;
 
     /**
@@ -10,7 +14,7 @@
      */
     #[ORM\Entity(repositoryClass: RoomEquipmentRepository::class)]
     #[ORM\Table(name: 'room_equipment')]
-    class RoomEquipment
+    class RoomEquipment implements RoomEquipmentModel
     {
         /**
          * The unique identifier of the room-equipment association.
@@ -25,20 +29,20 @@
         /**
          * The room associated with the equipment.
          *
-         * @var Room
+         * @var RoomModel
          */
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        private Room $room;
+        private RoomModel $room;
 
         /**
          * The equipment associated with the room.
          *
-         * @var Equipment
+         * @var EquipmentModel
          */
         #[ORM\ManyToOne(targetEntity: Equipment::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        private Equipment $equipment;
+        private EquipmentModel $equipment;
 
         /**
          * The quantity of the equipment in the room.
@@ -54,14 +58,14 @@
          * @var \DateTime
          */
         #[ORM\Column(type: 'datetime')]
-        private \DateTime $assignedAt;
+        private DateTime $assignedAt;
 
         /**
          * Initializes the room-equipment association with the assignment timestamp.
          */
         public function __construct()
         {
-            $this->assignedAt = new \DateTime();
+            $this->assignedAt = new DateTime();
         }
 
         /**
@@ -87,11 +91,11 @@
         /**
          * Set the room associated with the equipment.
          *
-         * @param Room $room
+         * @param RoomModel $room
          *
          * @return $this
          */
-        public function setRoom(Room $room): self
+        public function setRoom(RoomModel $room): static
         {
             $this->room = $room;
 
@@ -101,9 +105,9 @@
         /**
          * Get the equipment associated with the room.
          *
-         * @return Equipment
+         * @return EquipmentModel
          */
-        public function getEquipment(): Equipment
+        public function getEquipment(): EquipmentModel
         {
             return $this->equipment;
         }
@@ -111,11 +115,11 @@
         /**
          * Set the equipment associated with the room.
          *
-         * @param Equipment $equipment
+         * @param EquipmentModel $equipment
          *
          * @return $this
          */
-        public function setEquipment(Equipment $equipment): self
+        public function setEquipment(EquipmentModel $equipment): static
         {
             $this->equipment = $equipment;
 
@@ -139,7 +143,7 @@
          *
          * @return $this
          */
-        public function setQuantity(int $quantity): self
+        public function setQuantity(int $quantity): static
         {
             $this->quantity = $quantity;
 
@@ -151,7 +155,7 @@
          *
          * @return \DateTime
          */
-        public function getAssignedAt(): \DateTime
+        public function getAssignedAt(): DateTime
         {
             return $this->assignedAt;
         }
@@ -163,7 +167,7 @@
          *
          * @return $this
          */
-        public function setAssignedAt(\DateTime $assignedAt): self
+        public function setAssignedAt(DateTime $assignedAt): static
         {
             $this->assignedAt = $assignedAt;
 

@@ -2,11 +2,10 @@
 
     namespace App\Form;
 
+    use App\Core\Enum\ReservationStatus;
     use App\Entity\Reservation;
     use App\Entity\Room;
     use App\Entity\User;
-    use App\Enum\ReservationStatus;
-    use App\Enum\UserRole;
     use Symfony\Bridge\Doctrine\Form\Type\EntityType;
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\Extension\Core\Type\ChoiceType;

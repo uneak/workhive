@@ -2,16 +2,19 @@
 
     namespace App\Repository;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Repository\Adapter\SymfonyRepository;
+    use App\Core\Repository\RoomEquipmentRepositoryInterface;
     use App\Entity\RoomEquipment;
-    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+    use DateTime;
     use Doctrine\Persistence\ManagerRegistry;
 
     /**
      * Repository class for the RoomEquipment entity.
      *
-     * @extends ServiceEntityRepository<RoomEquipment>
+     * @extends SymfonyRepository<RoomEquipment>
      */
-    class RoomEquipmentRepository extends ServiceEntityRepository
+    class RoomEquipmentRepository extends SymfonyRepository implements RoomEquipmentRepositoryInterface
     {
         /**
          * Constructor for the RoomEquipment repository.
@@ -24,84 +27,32 @@
         }
 
         /**
-         * Finds all equipment assigned to a specific room.
+         * @inheritDoc
          *
-         * @param int $roomId The ID of the room.
-         * @return RoomEquipment[] Returns an array of RoomEquipment objects.
+         * @throws \Exception
+         */
+        protected function hydrateObject(array $data, ObjectModel $object): void
+        {
+            if (isset($data['room'])) $object->setRoom($data['room']);
+            if (isset($data['equipment'])) $object->setEquipment($data['equipment']);
+            if (isset($data['quantity'])) $object->setQuantity($data['quantity']);
+            if (isset($data['assignedAt'])) $object->setAssignedAt(new DateTime($data['assignedAt']));
+        }
+
+        /**
+         * Get all room equipments by room ID.
+         *
+         * @param int $roomId The ID of the room
+         * @return array<RoomEquipment>
          */
         public function findByRoom(int $roomId): array
         {
             return $this->createQueryBuilder('re')
                 ->andWhere('re.room = :roomId')
                 ->setParameter('roomId', $roomId)
-                ->orderBy('re.assignedAt', 'ASC')
+                ->orderBy('re.id', 'ASC')
                 ->getQuery()
                 ->getResult();
         }
 
-        /**
-         * Finds all rooms that use a specific equipment item.
-         *
-         * @param int $equipmentId The ID of the equipment.
-         * @return RoomEquipment[] Returns an array of RoomEquipment objects.
-         */
-        public function findByEquipment(int $equipmentId): array
-        {
-            return $this->createQueryBuilder('re')
-                ->andWhere('re.equipment = :equipmentId')
-                ->setParameter('equipmentId', $equipmentId)
-                ->orderBy('re.assignedAt', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds the total quantity of a specific equipment assigned across all rooms.
-         *
-         * @param int $equipmentId The ID of the equipment.
-         * @return int Returns the total quantity assigned.
-         */
-        public function getTotalQuantityByEquipment(int $equipmentId): int
-        {
-            return (int) $this->createQueryBuilder('re')
-                ->select('SUM(re.quantity)')
-                ->andWhere('re.equipment = :equipmentId')
-                ->setParameter('equipmentId', $equipmentId)
-                ->getQuery()
-                ->getSingleScalarResult();
-        }
-
-        /**
-         * Finds the total quantity of equipment assigned to a specific room.
-         *
-         * @param int $roomId The ID of the room.
-         * @return int Returns the total quantity of equipment.
-         */
-        public function getTotalQuantityByRoom(int $roomId): int
-        {
-            return (int) $this->createQueryBuilder('re')
-                ->select('SUM(re.quantity)')
-                ->andWhere('re.room = :roomId')
-                ->setParameter('roomId', $roomId)
-                ->getQuery()
-                ->getSingleScalarResult();
-        }
-
-        /**
-         * Finds the assignment details for a specific equipment in a specific room.
-         *
-         * @param int $roomId The ID of the room.
-         * @param int $equipmentId The ID of the equipment.
-         * @return RoomEquipment|null Returns the RoomEquipment object or null if not found.
-         */
-        public function findByRoomAndEquipment(int $roomId, int $equipmentId): ?RoomEquipment
-        {
-            return $this->createQueryBuilder('re')
-                ->andWhere('re.room = :roomId')
-                ->andWhere('re.equipment = :equipmentId')
-                ->setParameter('roomId', $roomId)
-                ->setParameter('equipmentId', $equipmentId)
-                ->getQuery()
-                ->getOneOrNullResult();
-        }
     }

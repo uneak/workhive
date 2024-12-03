@@ -9,7 +9,7 @@
                 <li>
                     {{ user.firstName }} |
                     <a class="btn btn-primary" href="{{ path('app_admin_user_edit', {id: user.id }) }}">Edit</a> |
-                    <a class="btn btn-primary" href="{{ path('app_admin_user_payment_list', {idUser: user.id }) }}">Payment</a> |
+                    <a class="btn btn-primary" href="{{ path('app_admin_payment_method_list', {idUser: user.id }) }}">Payment</a> |
                     <a class="btn btn-primary" href="{{ path('app_admin_user_show', {id: user.id }) }}">Voir</a> |
                     {{ include('_partials/_delete_form.html.twig', {entity: user, path: 'app_admin_user_delete'}) }}
                 </li>

@@ -2,7 +2,9 @@
 
     namespace App\Entity;
 
-    use App\Enum\UserRole;
+    use App\Core\Enum\UserRole;
+    use App\Core\Model\RoomModel;
+    use App\Core\Model\RoomRoleRateModel;
     use App\Repository\RoomRoleRateRepository;
     use Doctrine\ORM\Mapping as ORM;
 
@@ -11,7 +13,7 @@
      */
     #[ORM\Entity(repositoryClass: RoomRoleRateRepository::class)]
     #[ORM\Table(name: 'room_role_rate')]
-    class RoomRoleRate
+    class RoomRoleRate implements RoomRoleRateModel
     {
         /**
          * The unique identifier of the room-role rate.
@@ -26,11 +28,11 @@
         /**
          * The room associated with this rate.
          *
-         * @var Room
+         * @var RoomModel
          */
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        private Room $room;
+        private RoomModel $room;
 
         /**
          * The user role for which this rate applies.
@@ -61,9 +63,9 @@
         /**
          * Get the room associated with this rate.
          *
-         * @return Room
+         * @return RoomModel
          */
-        public function getRoom(): Room
+        public function getRoom(): RoomModel
         {
             return $this->room;
         }
@@ -71,11 +73,11 @@
         /**
          * Set the room associated with this rate.
          *
-         * @param Room $room The room to associate with this rate.
+         * @param RoomModel $room The room to associate with this rate.
          *
          * @return $this
          */
-        public function setRoom(Room $room): self
+        public function setRoom(RoomModel $room): static
         {
             $this->room = $room;
 
@@ -99,7 +101,7 @@
          *
          * @return $this
          */
-        public function setUserRole(UserRole $userRole): self
+        public function setUserRole(UserRole $userRole): static
         {
             $this->userRole = $userRole;
 
@@ -123,7 +125,7 @@
          *
          * @return $this
          */
-        public function setHourlyRate(float $hourlyRate): self
+        public function setHourlyRate(float $hourlyRate): static
         {
             $this->hourlyRate = $hourlyRate;
 

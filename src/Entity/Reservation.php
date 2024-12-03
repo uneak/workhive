@@ -2,7 +2,10 @@
 
     namespace App\Entity;
 
-    use App\Enum\ReservationStatus;
+    use App\Core\Enum\ReservationStatus;
+    use App\Core\Model\ReservationModel;
+    use App\Core\Model\RoomModel;
+    use App\Core\Model\UserModel;
     use App\Repository\ReservationRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
@@ -12,7 +15,7 @@
      */
     #[ORM\Entity(repositoryClass: ReservationRepository::class)]
     #[ORM\Table(name: 'reservations')]
-    class Reservation
+    class Reservation implements ReservationModel
     {
         /**
          * The unique identifier of the reservation.
@@ -27,20 +30,20 @@
         /**
          * The room associated with the reservation.
          *
-         * @var Room|null
+         * @var RoomModel|null
          */
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false)]
-        private ?Room $room;
+        private ?RoomModel $room;
 
         /**
          * The user who made the reservation.
          *
-         * @var User|null
+         * @var UserModel|null
          */
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
-        private ?User $user;
+        private ?UserModel $user;
 
         /**
          * The start date and time of the reservation.
@@ -104,9 +107,9 @@
         /**
          * Get the room associated with the reservation.
          *
-         * @return Room|null
+         * @return RoomModel|null
          */
-        public function getRoom(): ?Room
+        public function getRoom(): ?RoomModel
         {
             return $this->room;
         }
@@ -114,10 +117,10 @@
         /**
          * Set the room associated with the reservation.
          *
-         * @param Room|null $room
+         * @param RoomModel|null $room
          * @return $this
          */
-        public function setRoom(?Room $room): static
+        public function setRoom(?RoomModel $room): static
         {
             $this->room = $room;
 
@@ -127,9 +130,9 @@
         /**
          * Get the user who made the reservation.
          *
-         * @return User|null
+         * @return UserModel|null
          */
-        public function getUser(): ?User
+        public function getUser(): ?UserModel
         {
             return $this->user;
         }
@@ -137,10 +140,10 @@
         /**
          * Set the user who made the reservation.
          *
-         * @param User|null $user
+         * @param UserModel|null $user
          * @return $this
          */
-        public function setUser(?User $user): static
+        public function setUser(?UserModel $user): static
         {
             $this->user = $user;
 

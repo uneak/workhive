@@ -2,16 +2,19 @@
 
     namespace App\Repository;
 
+    use App\Core\Model\ObjectModel;
+    use App\Core\Repository\Adapter\SymfonyRepository;
+    use App\Core\Repository\ReservationEquipmentRepositoryInterface;
     use App\Entity\ReservationEquipment;
-    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+    use DateTime;
     use Doctrine\Persistence\ManagerRegistry;
 
     /**
      * Repository class for the ReservationEquipment entity.
      *
-     * @extends ServiceEntityRepository<ReservationEquipment>
+     * @extends SymfonyRepository<ReservationEquipment>
      */
-    class ReservationEquipmentRepository extends ServiceEntityRepository
+    class ReservationEquipmentRepository extends SymfonyRepository implements ReservationEquipmentRepositoryInterface
     {
         /**
          * Constructor for the ReservationEquipment repository.
@@ -24,11 +27,23 @@
         }
 
         /**
-         * Finds all equipment reserved for a specific reservation.
+         * @inheritDoc
          *
-         * @param int $reservationId The ID of the reservation.
+         * @throws \Exception
+         */
+        protected function hydrateObject(array $data, ObjectModel $object): void
+        {
+            if (isset($data['reservation'])) $object->setReservation($data['reservation']);
+            if (isset($data['equipment'])) $object->setEquipment($data['equipment']);
+            if (isset($data['quantity'])) $object->setQuantity($data['quantity']);
+            if (isset($data['updatedAt'])) $object->setUpdatedAt(new DateTime($data['updatedAt']));
+        }
+
+        /**
+         * Get all reservation equipments by reservation ID.
          *
-         * @return ReservationEquipment[] Returns an array of ReservationEquipment objects.
+         * @param int $reservationId The ID of the reservation
+         * @return array<ReservationEquipment>
          */
         public function findByReservation(int $reservationId): array
         {
@@ -40,63 +55,4 @@
                 ->getResult();
         }
 
-        /**
-         * Finds all reservations using a specific equipment item.
-         *
-         * @param int $equipmentId The ID of the equipment.
-         *
-         * @return ReservationEquipment[] Returns an array of ReservationEquipment objects.
-         */
-        public function findByEquipment(int $equipmentId): array
-        {
-            return $this->createQueryBuilder('re')
-                ->andWhere('re.equipment = :equipmentId')
-                ->setParameter('equipmentId', $equipmentId)
-                ->orderBy('re.id', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds all reservations using a specific equipment item within a date range.
-         *
-         * @param int                $equipmentId The ID of the equipment.
-         * @param \DateTimeInterface $startDate   The start date of the range.
-         * @param \DateTimeInterface $endDate     The end date of the range.
-         *
-         * @return ReservationEquipment[] Returns an array of ReservationEquipment objects.
-         */
-        public function findByEquipmentAndDateRange(
-            int $equipmentId,
-            \DateTimeInterface $startDate,
-            \DateTimeInterface $endDate
-        ): array {
-            return $this->createQueryBuilder('re')
-                ->join('re.reservation', 'r')
-                ->andWhere('re.equipment = :equipmentId')
-                ->andWhere('r.startAt BETWEEN :startDate AND :endDate OR r.endAt BETWEEN :startDate AND :endDate')
-                ->setParameter('equipmentId', $equipmentId)
-                ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'))
-                ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'))
-                ->orderBy('r.startAt', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-
-        /**
-         * Finds the total quantity of equipment reserved for a specific reservation.
-         *
-         * @param int $reservationId The ID of the reservation.
-         *
-         * @return int Returns the total quantity of equipment reserved.
-         */
-        public function getTotalQuantityByReservation(int $reservationId): int
-        {
-            return (int)$this->createQueryBuilder('re')
-                ->select('SUM(re.quantity)')
-                ->andWhere('re.reservation = :reservationId')
-                ->setParameter('reservationId', $reservationId)
-                ->getQuery()
-                ->getSingleScalarResult();
-        }
     }
