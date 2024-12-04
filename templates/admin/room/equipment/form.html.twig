@@ -37,7 +37,7 @@
 
         <div class="d-flex justify-content-between mt-4">
             <a href="{{ path('app_admin_room_equipment_list', {idRoom: roomEquipment.room.id}) }}" class="btn btn-secondary">Back to List</a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-light m-0">
                 {{ roomEquipment.id is not null ? 'Update Room Equipment' : 'Create Room Equipment' }}
             </button>
         </div>

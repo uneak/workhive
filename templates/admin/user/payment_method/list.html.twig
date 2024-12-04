@@ -41,8 +41,8 @@
 {% endblock %}
 
 {% block list_actions %}
-    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'credit_card' }) }}" class="btn btn-primary">Create credit_card</a>
-    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'bitcoin' }) }}" class="btn btn-primary">Create bitcoin</a>
-    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'bank_transfer' }) }}" class="btn btn-primary">Create bank_transfer</a>
-    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'paypal' }) }}" class="btn btn-primary">Create paypal</a>
+    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'credit_card' }) }}" class="btn btn-light m-0">Create credit_card</a>
+    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'bitcoin' }) }}" class="btn btn-light m-0">Create bitcoin</a>
+    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'bank_transfer' }) }}" class="btn btn-light m-0">Create bank_transfer</a>
+    <a href="{{ path('app_admin_payment_method_new', {idUser: user.id, type: 'paypal' }) }}" class="btn btn-light m-0">Create paypal</a>
 {% endblock %}

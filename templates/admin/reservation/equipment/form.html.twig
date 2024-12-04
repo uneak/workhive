@@ -30,7 +30,7 @@
 
         <div class="d-flex justify-content-between mt-4">
             <a href="{{ path('app_admin_reservation_equipment_list', {idReservation: reservationEquipment.reservation.id}) }}" class="btn btn-secondary">Back to List</a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-light m-0">
                 {{ reservationEquipment.id is not null ? 'Update Reservation Equipment' : 'Create Reservation Equipment' }}
             </button>
         </div>

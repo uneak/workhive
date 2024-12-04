@@ -23,7 +23,7 @@
         <div class="d-flex justify-content-between mt-4">
             <a href="{{ path('app_admin_payment_method_list', {idUser: paymentMethod.user.id}) }}" class="btn btn-secondary">Back to
                 List</a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-light m-0">
                 {{ paymentMethod.id is not null ? 'Update Payment Method' : 'Create Payment Method' }}
             </button>
         </div>

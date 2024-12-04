@@ -1,0 +1,18 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block main %}
+    <div class="row">
+        <div class="col-12">
+            <div class="mx-3 bg-gradient-dark shadow-dark border-radius-lg p-3 d-flex justify-content-between align-items-center">
+                <h6 class="text-white text-capitalize m-0">{% block list_title %}{% endblock %}</h6>
+                <div>
+                    {% block list_actions %}{% endblock %}
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div>{% block list_header %}{% endblock %}</div>
+                <div>{% block list_body %}{% endblock %}</div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

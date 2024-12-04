@@ -29,7 +29,7 @@
                 </li>
             {% endfor %}
         </ul>
-        <a href="{{ path('app_admin_week_schedules_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+        <a href="{{ path('app_admin_week_schedules_new', {idRoom: room.id}) }}" class="btn btn-light m-0">Create
             Schedule</a>
 
         <h2>Ouvertures/Fermetures exceptionnelles :</h2>
@@ -57,7 +57,7 @@
                 </li>
             {% endfor %}
         </ul>
-        <a href="{{ path('app_admin_date_schedules_new', {idRoom: room.id}) }}" class="btn btn-primary">Create
+        <a href="{{ path('app_admin_date_schedules_new', {idRoom: room.id}) }}" class="btn btn-light m-0">Create
             Schedule</a>
     </div>
 {% endblock %}

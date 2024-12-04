@@ -37,7 +37,7 @@
 
         <div class="d-flex justify-content-between mt-4">
             <a href="{{ path('app_admin_equipment_rate_list', {idEquipment: equipmentRoleRate.equipment.id}) }}" class="btn btn-secondary">Back to List</a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-light m-0">
                 {{ equipmentRoleRate.id is not null ? 'Update Equipment RoleRate' : 'Create Equipment RoleRate' }}
             </button>
         </div>
