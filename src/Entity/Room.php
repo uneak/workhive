@@ -12,6 +12,7 @@
     use Doctrine\Common\Collections\ArrayCollection;
     use Doctrine\Common\Collections\Collection;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Attribute\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
@@ -29,6 +30,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(['room:read'])]
         private ?int $id = null;
 
         /**
@@ -38,6 +40,7 @@
          */
         #[ORM\Column(type: 'string', length: 100)]
         #[Assert\NotBlank]
+        #[Groups(['room:read', 'room:write', 'member:room:read', 'admin:room:read'])]
         private string $name;
 
         /**
@@ -53,6 +56,7 @@
             min: 1,
             max: 20,
         )]
+        #[Groups(['room:read', 'room:write'])]
         private int $capacity;
 
         /**
@@ -61,6 +65,9 @@
          * @var float
          */
         #[ORM\Column(type: 'float')]
+        #[Assert\Positive]
+        #[Assert\Type(type: 'float')]
+        #[Groups(['room:read', 'room:write'])]
         private float $width;
 
         /**
@@ -69,6 +76,9 @@
          * @var float
          */
         #[ORM\Column(type: 'float')]
+        #[Assert\Positive]
+        #[Assert\Type(type: 'float')]
+        #[Groups(['room:read', 'room:write'])]
         private float $length;
 
         /**
@@ -77,7 +87,9 @@
          * @var Status|null
          */
         #[ORM\Column(enumType: Status::class)]
-        private ?Status $status = null;
+        #[Groups(['room:read', 'room:write'])]
+        #[Assert\NotBlank]
+        private ?Status $status;
 
         /**
          * A description of the room.
@@ -85,6 +97,7 @@
          * @var string|null
          */
         #[ORM\Column(type: 'text', nullable: true)]
+        #[Groups(['room:read', 'room:write', 'member:room:read', 'user:room:read'])]
         private ?string $description;
 
         /**
@@ -93,6 +106,7 @@
          * @var string|null
          */
         #[ORM\Column(type: 'string', length: 255, nullable: true)]
+        #[Groups(['room:read', 'room:write'])]
         private ?string $photo;
 
         /**
@@ -101,6 +115,7 @@
          * @var DateTime
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(['room:read'])]
         private DateTime $createdAt;
 
         /**
@@ -109,6 +124,7 @@
          * @var DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(['room:read'])]
         private ?DateTime $updatedAt;
 
         /**
@@ -527,4 +543,6 @@
 
             return $this;
         }
+
+
     }
