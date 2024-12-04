@@ -9,7 +9,7 @@
      */
     interface EquipmentRoleRateModel extends ObjectModel
     {
-
+        public const GROUP_PREFIX = 'equipment_role_rate';
 
         /**
          * Get the equipment associated with this rate.
@@ -17,6 +17,11 @@
          * @return EquipmentModel
          */
         public function getEquipment(): EquipmentModel;
+
+        /**
+         * Get the ID of the equipment associated with this rate.
+         */
+        public function getEquipmentId(): ?int;
 
         /**
          * Set the equipment associated with this rate.

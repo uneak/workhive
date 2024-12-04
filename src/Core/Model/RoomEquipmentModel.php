@@ -9,6 +9,7 @@ use DateTime;
  */
 interface RoomEquipmentModel extends ObjectModel
 {
+    public const GROUP_PREFIX = 'room_equipment';
 
     /**
      * Get the room associated with the equipment.
@@ -16,6 +17,11 @@ interface RoomEquipmentModel extends ObjectModel
      * @return RoomModel
      */
     public function getRoom(): RoomModel;
+
+    /**
+     * Get the ID of the room associated with the equipment.
+     */
+    public function getRoomId(): ?int;
 
     /**
      * Set the room associated with the equipment.
@@ -32,6 +38,11 @@ interface RoomEquipmentModel extends ObjectModel
      * @return EquipmentModel
      */
     public function getEquipment(): EquipmentModel;
+
+    /**
+     * Get the ID of the equipment associated with the room.
+     */
+    public function getEquipmentId(): ?int;
 
     /**
      * Set the equipment associated with the room.
@@ -54,7 +65,7 @@ interface RoomEquipmentModel extends ObjectModel
      *
      * @param int $quantity
      *
-     * @return $this
+     * @return static
      */
     public function setQuantity(int $quantity): static;
 

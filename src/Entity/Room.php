@@ -12,103 +12,147 @@
     use Doctrine\Common\Collections\ArrayCollection;
     use Doctrine\Common\Collections\Collection;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
-     * Represents a room that can be reserved.
+     * Room Entity
+     * 
+     * This entity represents a room that can be reserved in the application.
+     * It includes physical characteristics like dimensions and capacity,
+     * as well as administrative information like status and description.
+     * 
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - room:read: Room-specific read group
+     * - room:write: Room-specific write group
      */
     #[ORM\Entity(repositoryClass: RoomRepository::class)]
     #[ORM\Table(name: 'rooms')]
     class Room implements RoomModel
     {
+        public const READ_GROUPS = ['read', RoomModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', RoomModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the room.
-         *
-         * @var int|null
          */
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
          * The name of the room.
-         *
-         * @var string
+         * Must be between 2 and 100 characters.
          */
         #[ORM\Column(type: 'string', length: 100)]
-        #[Assert\NotBlank]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Room name is required')]
+        #[Assert\Length(
+            min: 2,
+            max: 100,
+            minMessage: 'Room name must be at least {{ limit }} characters long',
+            maxMessage: 'Room name cannot be longer than {{ limit }} characters'
+        )]
         private string $name;
 
         /**
-         * The capacity of the room.
-         *
-         * @var int
+         * The maximum capacity of the room.
+         * Must be between 1 and 100 people.
          */
         #[ORM\Column(type: 'integer')]
-        #[Assert\Positive]
-        #[Assert\NotBlank]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Capacity is required')]
+        #[Assert\Type(
+            type: 'integer',
+            message: 'Capacity must be a whole number'
+        )]
         #[Assert\Range(
-            notInRangeMessage: 'You must be between {{ min }} and {{ max }} users tall to enter',
             min: 1,
-            max: 20,
+            max: 100,
+            notInRangeMessage: 'Capacity must be between {{ min }} and {{ max }} people'
         )]
         private int $capacity;
 
         /**
          * The width of the room in meters.
-         *
-         * @var float
+         * Must be between 0.1 and 50.0 meters.
          */
         #[ORM\Column(type: 'float')]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Width is required')]
+        #[Assert\Type(
+            type: 'float',
+            message: 'Width must be a decimal number'
+        )]
+        #[Assert\Range(
+            min: 0.1,
+            max: 50.0,
+            notInRangeMessage: 'Width must be between {{ min }} and {{ max }} meters'
+        )]
         private float $width;
 
         /**
          * The length of the room in meters.
-         *
-         * @var float
+         * Must be between 0.1 and 50.0 meters.
          */
         #[ORM\Column(type: 'float')]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Length is required')]
+        #[Assert\Type(
+            type: 'float',
+            message: 'Length must be a decimal number'
+        )]
+        #[Assert\Range(
+            min: 0.1,
+            max: 50.0,
+            notInRangeMessage: 'Length must be between {{ min }} and {{ max }} meters'
+        )]
         private float $length;
 
         /**
-         * The status of the room (active or inactive).
-         *
-         * @var Status|null
+         * The current status of the room.
+         * Indicates whether the room is available for booking.
          */
         #[ORM\Column(enumType: Status::class)]
+        #[Groups(self::READ_GROUPS)]
+        #[Assert\NotNull(message: 'Status is required')]
         private ?Status $status = null;
 
         /**
-         * A description of the room.
-         *
-         * @var string|null
+         * A detailed description of the room.
+         * Optional, limited to 1000 characters.
          */
         #[ORM\Column(type: 'text', nullable: true)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\Length(
+            max: 1000,
+            maxMessage: 'Description cannot be longer than {{ limit }} characters'
+        )]
         private ?string $description;
 
         /**
-         * A photo of the room.
-         *
-         * @var string|null
+         * The photo URL of the room (optional).
          */
         #[ORM\Column(type: 'string', length: 255, nullable: true)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?string $photo;
 
         /**
          * The timestamp when the room was created.
-         *
-         * @var DateTime
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
          * The timestamp when the room was last updated.
-         *
-         * @var DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**
@@ -481,7 +525,6 @@
 
             return $this;
         }
-
 
         /**
          * Get the timestamp when this record was created.

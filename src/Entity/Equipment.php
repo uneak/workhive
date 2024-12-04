@@ -6,14 +6,25 @@
     use App\Repository\EquipmentRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents a piece of equipment that can be associated with rooms or reservations.
+     * 
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - equipment:read: Equipment-specific read group
+     * - equipment:write: Equipment-specific write group
      */
     #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
     #[ORM\Table(name: 'equipments')]
     class Equipment implements EquipmentModel
     {
+        public const READ_GROUPS = ['read', EquipmentModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', EquipmentModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the equipment.
          *
@@ -22,6 +33,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -30,6 +42,14 @@
          * @var string
          */
         #[ORM\Column(type: 'string', length: 100)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Equipment name is required')]
+        #[Assert\Length(
+            min: 2,
+            max: 100,
+            minMessage: 'Equipment name must be at least {{ limit }} characters long',
+            maxMessage: 'Equipment name cannot be longer than {{ limit }} characters'
+        )]
         private string $name;
 
         /**
@@ -38,6 +58,11 @@
          * @var string|null
          */
         #[ORM\Column(type: 'text', nullable: true)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\Length(
+            max: 1000,
+            maxMessage: 'Description cannot be longer than {{ limit }} characters'
+        )]
         private ?string $description = null;
 
         /**
@@ -46,6 +71,7 @@
          * @var string|null
          */
         #[ORM\Column(type: 'string', length: 255, nullable: true)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?string $photo = null;
 
         /**
@@ -62,6 +88,7 @@
          * @var \DateTime
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -70,6 +97,7 @@
          * @var \DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**

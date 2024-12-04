@@ -9,80 +9,111 @@
     use App\Repository\ReservationRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Validator\Constraints as Assert;
+    use Symfony\Component\Serializer\Annotation\Groups;
 
     /**
-     * Represents a reservation for a room by a user.
+     * Reservation Entity
+     * 
+     * This entity represents a room reservation made by a user.
+     * It includes booking details such as start and end times,
+     * the associated room and user, and the current status of the reservation.
+     * 
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - reservation:read: Reservation-specific read group
+     * - reservation:write: Reservation-specific write group
      */
     #[ORM\Entity(repositoryClass: ReservationRepository::class)]
     #[ORM\Table(name: 'reservations')]
     class Reservation implements ReservationModel
     {
+        public const READ_GROUPS = ['read', ReservationModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', ReservationModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the reservation.
-         *
-         * @var int|null
          */
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
-         * The room associated with the reservation.
-         *
-         * @var RoomModel|null
+         * The room being reserved.
+         * Must be a valid room from the system.
          */
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false)]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Room is required')]
         private ?RoomModel $room;
 
         /**
-         * The user who made the reservation.
-         *
-         * @var UserModel|null
+         * The user making the reservation.
+         * Must be a valid user from the system.
          */
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'User is required')]
         private ?UserModel $user;
 
         /**
          * The start date and time of the reservation.
-         *
-         * @var DateTime
+         * Must be today or in the future.
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Start date is required')]
+        #[Assert\Type(type: DateTime::class)]
+        #[Assert\GreaterThanOrEqual(
+            'today',
+            message: 'Start date must be today or in the future'
+        )]
         private DateTime $startAt;
 
         /**
          * The end date and time of the reservation.
-         *
-         * @var DateTime
+         * Must be after the start date.
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'End date is required')]
+        #[Assert\Type(type: DateTime::class)]
+        #[Assert\Expression(
+            "this.getEndAt() > this.getStartAt()",
+            message: 'End date must be after the start date'
+        )]
         private DateTime $endAt;
 
         /**
          * The current status of the reservation.
-         *
-         * @var ReservationStatus|null
+         * Tracks the state of the reservation (pending, confirmed, etc.).
          */
         #[ORM\Column(enumType: ReservationStatus::class)]
+        #[Groups(self::READ_GROUPS)]
+        #[Assert\NotNull(message: 'Status is required')]
         private ?ReservationStatus $status;
 
         /**
          * The timestamp when the reservation was created.
-         *
-         * @var DateTime
+         * Automatically set when the reservation is made.
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(self::READ_GROUPS)]
+        #[Assert\NotNull(message: 'Created date is required')]
         private DateTime $createdAt;
 
         /**
          * The timestamp when the reservation was last updated.
-         *
-         * @var DateTime|null
+         * Optional, updated automatically when changes are made.
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(self::READ_GROUPS)]
+        #[Assert\Type(type: DateTime::class)]
         private ?DateTime $updatedAt;
 
         /**
@@ -128,6 +159,17 @@
         }
 
         /**
+         * Get the ID of the room associated with the reservation.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getRoomId(): ?int
+        {
+            return $this->room?->getId();
+        }
+
+        /**
          * Get the user who made the reservation.
          *
          * @return UserModel|null
@@ -148,6 +190,17 @@
             $this->user = $user;
 
             return $this;
+        }
+
+        /**
+         * Get the ID of the user who made the reservation.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getUserId(): ?int
+        {
+            return $this->user?->getId();
         }
 
         /**

@@ -9,6 +9,8 @@
      */
     interface DateSchedulesModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'date_schedules';
+
         /**
          * Get the date of the schedule.
          *
@@ -81,6 +83,11 @@
         public function getRoom(): ?RoomModel;
 
         /**
+         * Get the ID of the room associated with this schedule.
+         */
+        public function getRoomId(): ?int;
+
+        /**
          * Set the room associated with this schedule.
          *
          * @param RoomModel|null $room
@@ -88,4 +95,9 @@
          * @return static
          */
         public function setRoom(?RoomModel $room): static;
+
+        /**
+         * Get the ID of the schedule.
+         */
+        public function getId(): ?int;
     }

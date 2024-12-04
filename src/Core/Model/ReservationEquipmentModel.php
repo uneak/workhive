@@ -9,6 +9,7 @@
      */
     interface ReservationEquipmentModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'reservation_equipment';
 
         /**
          * Get the reservation associated with this equipment.
@@ -16,6 +17,11 @@
          * @return ReservationModel
          */
         public function getReservation(): ReservationModel;
+
+        /**
+         * Get the ID of the reservation associated with this equipment.
+         */
+        public function getReservationId(): ?int;
 
         /**
          * Set the reservation associated with this equipment.
@@ -32,6 +38,11 @@
          * @return EquipmentModel
          */
         public function getEquipment(): EquipmentModel;
+
+        /**
+         * Get the ID of the equipment associated with this reservation.
+         */
+        public function getEquipmentId(): ?int;
 
         /**
          * Set the equipment associated with this reservation.

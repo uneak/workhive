@@ -8,14 +8,25 @@
     use DateTimeInterface;
     use Doctrine\DBAL\Types\Types;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents a specific schedule for a date, including open/close times and status.
+     *
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - schedule:read: Schedule-specific read group
+     * - schedule:write: Schedule-specific write group
      */
     #[ORM\Entity(repositoryClass: DateSchedulesRepository::class)]
     #[ORM\Table(name: 'date_schedules')]
     class DateSchedules implements DateSchedulesModel
     {
+        public const READ_GROUPS = ['read', DateSchedulesModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', DateSchedulesModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the schedule.
          *
@@ -24,6 +35,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -32,6 +44,7 @@
          * @var string|null
          */
         #[ORM\Column(length: 255, nullable: true)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?string $name = null;
 
         /**
@@ -40,6 +53,8 @@
          * @var \DateTimeInterface|null
          */
         #[ORM\Column(type: Types::DATE_MUTABLE)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Date is required')]
         private ?DateTimeInterface $date = null;
 
         /**
@@ -48,6 +63,8 @@
          * @var \DateTimeInterface|null
          */
         #[ORM\Column(type: Types::TIME_MUTABLE)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Opening time is required')]
         private ?DateTimeInterface $startedAt = null;
 
         /**
@@ -56,6 +73,8 @@
          * @var \DateTimeInterface|null
          */
         #[ORM\Column(type: Types::TIME_MUTABLE)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Closing time is required')]
         private ?DateTimeInterface $endedAt = null;
 
         /**
@@ -64,16 +83,19 @@
          * @var bool|null
          */
         #[ORM\Column]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?bool $isOpen = null;
 
         /**
          * The room associated with this schedule.
          *
-         * @var Room|null
+         * @var RoomModel|null
          */
-        #[ORM\ManyToOne(inversedBy: 'dateSchedules')]
+        #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'dateSchedules')]
         #[ORM\JoinColumn(nullable: false)]
-        private ?Room $room = null;
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Room is required')]
+        private ?RoomModel $room = null;
 
         /**
          * Get the unique identifier of the schedule.
@@ -218,7 +240,7 @@
         /**
          * Set the room associated with this schedule.
          *
-         * @param RoomModel $room
+         * @param ?RoomModel $room
          *
          * @return $this
          */
@@ -227,5 +249,16 @@
             $this->room = $room;
 
             return $this;
+        }
+
+        /**
+         * Get the ID of the room associated with this schedule.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getRoomId(): ?int
+        {
+            return $this->room?->getId();
         }
     }

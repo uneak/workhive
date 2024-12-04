@@ -10,6 +10,7 @@
      */
     interface ReservationModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'reservation';
 
         /**
          * Get the room associated with the reservation.
@@ -17,6 +18,11 @@
          * @return RoomModel|null
          */
         public function getRoom(): ?RoomModel;
+
+        /**
+         * Get the ID of the room associated with the reservation.
+         */
+        public function getRoomId(): ?int;
 
         /**
          * Set the room associated with the reservation.
@@ -33,6 +39,11 @@
          * @return UserModel|null
          */
         public function getUser(): ?UserModel;
+
+        /**
+         * Get the ID of the user who made the reservation.
+         */
+        public function getUserId(): ?int;
 
         /**
          * Set the user who made the reservation.
@@ -90,5 +101,4 @@
          * @return static
          */
         public function setStatus(ReservationStatus $status): static;
-
     }

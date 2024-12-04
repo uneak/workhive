@@ -9,6 +9,7 @@
      */
     interface PaymentModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'payment';
 
         /**
          * Get the reservation associated with this payment.
@@ -16,6 +17,11 @@
          * @return ReservationModel|null The associated reservation.
          */
         public function getReservation(): ?ReservationModel;
+
+        /**
+         * Get the ID of the reservation associated with this payment.
+         */
+        public function getReservationId(): ?int;
 
         /**
          * Set the reservation associated with this payment.
@@ -32,6 +38,11 @@
          * @return PaymentMethodModel|null The payment method.
          */
         public function getPaymentMethod(): ?PaymentMethodModel;
+
+        /**
+         * Get the ID of the payment method used for this payment.
+         */
+        public function getPaymentMethodId(): ?int;
 
         /**
          * Set the payment method used for this payment.

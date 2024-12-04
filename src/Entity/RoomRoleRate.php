@@ -7,14 +7,28 @@
     use App\Core\Model\RoomRoleRateModel;
     use App\Repository\RoomRoleRateRepository;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents the hourly rate for a room based on the user's role.
+     * 
+     * This entity defines pricing rates for rooms based on user roles,
+     * allowing different pricing strategies for different user categories.
+     * 
+     * Groups:
+     * - read: Global read access for basic rate information
+     * - write: Global write access for creating/updating rates
+     * - room_role_rate:read: Specific read access for room role rate details
+     * - room_role_rate:write: Specific write access for room role rate management
      */
     #[ORM\Entity(repositoryClass: RoomRoleRateRepository::class)]
     #[ORM\Table(name: 'room_role_rate')]
     class RoomRoleRate implements RoomRoleRateModel
     {
+        public const READ_GROUPS = ['read', RoomRoleRateModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', RoomRoleRateModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the room-role rate.
          *
@@ -23,6 +37,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -32,6 +47,8 @@
          */
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Room is required')]
         private RoomModel $room;
 
         /**
@@ -40,6 +57,8 @@
          * @var UserRole
          */
         #[ORM\Column(type: 'string', enumType: UserRole::class)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'User role is required')]
         private UserRole $userRole;
 
         /**
@@ -48,6 +67,12 @@
          * @var float
          */
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Hourly rate is required')]
+        #[Assert\GreaterThanOrEqual(
+            value: 0,
+            message: 'Hourly rate must be greater than or equal to zero'
+        )]
         private float $hourlyRate;
 
         /**
@@ -82,6 +107,17 @@
             $this->room = $room;
 
             return $this;
+        }
+
+        /**
+         * Get the ID of the room associated with this rate.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getRoomId(): ?int
+        {
+            return $this->room->getId();
         }
 
         /**

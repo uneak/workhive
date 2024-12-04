@@ -9,6 +9,7 @@
      */
     interface WeekSchedulesModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'week_schedules';
 
         const WEEK_DAYS = [
             0 => 'Sunday',
@@ -76,6 +77,11 @@
         public function getRoom(): ?RoomModel;
 
         /**
+         * Get the ID of the room associated with this schedule.
+         */
+        public function getRoomId(): ?int;
+
+        /**
          * Set the room associated with this schedule.
          *
          * @param RoomModel|null $room
@@ -83,4 +89,9 @@
          * @return static
          */
         public function setRoom(?RoomModel $room): static;
+
+        /**
+         * Get the ID of the schedule.
+         */
+        public function getId(): ?int;
     }

@@ -9,14 +9,28 @@
     use App\Repository\PaymentRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents a payment made for a reservation.
+     * 
+     * This entity represents a payment transaction in the application.
+     * It tracks payment details, status, and associated reservation.
+     * 
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - payment:read: Payment-specific read group
+     * - payment:write: Payment-specific write group
      */
     #[ORM\Entity(repositoryClass: PaymentRepository::class)]
     #[ORM\Table(name: 'payments')]
     class Payment implements PaymentModel
     {
+        public const READ_GROUPS = ['read', PaymentModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', PaymentModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the payment.
          *
@@ -25,6 +39,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -34,6 +49,8 @@
          */
         #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'payments')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Reservation is required')]
         private ?ReservationModel $reservation = null;
 
         /**
@@ -43,6 +60,8 @@
          */
         #[ORM\ManyToOne(targetEntity: PaymentMethod::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Payment method is required')]
         private ?PaymentMethodModel $paymentMethod = null;
 
         /**
@@ -51,6 +70,9 @@
          * @var float
          */
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Amount is required')]
+        #[Assert\Positive(message: 'Amount must be positive')]
         private float $amount;
 
         /**
@@ -59,6 +81,8 @@
          * @var PaymentStatus
          */
         #[ORM\Column(type: 'string', enumType: PaymentStatus::class)]
+        #[Groups(self::READ_GROUPS)]
+        #[Assert\NotNull(message: 'Payment status is required')]
         private PaymentStatus $status = PaymentStatus::PENDING;
 
         /**
@@ -67,6 +91,7 @@
          * @var \DateTime
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -75,6 +100,7 @@
          * @var \DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt = null;
 
         /**
@@ -120,6 +146,17 @@
         }
 
         /**
+         * Get the ID of the reservation associated with this payment.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getReservationId(): ?int
+        {
+            return $this->reservation?->getId();
+        }
+
+        /**
          * Get the payment method used for this payment.
          *
          * @return PaymentMethodModel|null The payment method.
@@ -133,13 +170,25 @@
          * Set the payment method used for this payment.
          *
          * @param PaymentMethodModel|null $paymentMethod The payment method to set.
-         * @return $this
+         *
+         * @return static
          */
         public function setPaymentMethod(?PaymentMethodModel $paymentMethod): static
         {
             $this->paymentMethod = $paymentMethod;
 
             return $this;
+        }
+
+        /**
+         * Get the ID of the payment method used for this payment.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getPaymentMethodId(): ?int
+        {
+            return $this->paymentMethod?->getId();
         }
 
         /**

@@ -10,6 +10,7 @@ use App\Core\Enum\UserRole;
  */
 interface UserModel extends ObjectModel
 {
+    public const GROUP_PREFIX = 'user';
 
     /**
      * Get the role of the user.
@@ -40,5 +41,4 @@ interface UserModel extends ObjectModel
      * @return static
      */
     public function setStatus(Status $status): static;
-
 }

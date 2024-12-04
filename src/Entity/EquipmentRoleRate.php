@@ -7,14 +7,25 @@
     use App\Core\Model\EquipmentRoleRateModel;
     use App\Repository\EquipmentRoleRateRepository;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents the hourly rate for using a specific equipment, based on the user's role.
+     * 
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - equipment-rate:read: Equipment rate-specific read group
+     * - equipment-rate:write: Equipment rate-specific write group
      */
     #[ORM\Entity(repositoryClass: EquipmentRoleRateRepository::class)]
     #[ORM\Table(name: 'equipment_role_rate')]
     class EquipmentRoleRate implements EquipmentRoleRateModel
     {
+        public const READ_GROUPS = ['read', EquipmentRoleRateModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', EquipmentRoleRateModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the equipment role rate.
          *
@@ -23,16 +34,19 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
          * The equipment associated with this rate.
          *
-         * @var Equipment
+         * @var EquipmentModel
          */
         #[ORM\ManyToOne(targetEntity: Equipment::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        private Equipment $equipment;
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Equipment is required')]
+        private EquipmentModel $equipment;
 
         /**
          * The role of the user for which this rate applies.
@@ -40,6 +54,8 @@
          * @var UserRole
          */
         #[ORM\Column(type: 'string', enumType: UserRole::class)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'User role is required')]
         private UserRole $userRole;
 
         /**
@@ -48,6 +64,12 @@
          * @var float
          */
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Hourly rate is required')]
+        #[Assert\GreaterThanOrEqual(
+            value: 0,
+            message: 'Hourly rate must be greater than or equal to zero'
+        )]
         private float $hourlyRate;
 
         /**
@@ -63,9 +85,9 @@
         /**
          * Get the equipment associated with this rate.
          *
-         * @return Equipment
+         * @return EquipmentModel
          */
-        public function getEquipment(): Equipment
+        public function getEquipment(): EquipmentModel
         {
             return $this->equipment;
         }
@@ -82,6 +104,17 @@
             $this->equipment = $equipment;
 
             return $this;
+        }
+
+        /**
+         * Get the ID of the equipment associated with this rate.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getEquipmentId(): ?int
+        {
+            return $this->equipment?->getId();
         }
 
         /**

@@ -10,6 +10,7 @@
      */
     interface PaymentMethodModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'payment_method';
 
         /**
          * Get the user associated with this payment method.
@@ -17,6 +18,11 @@
          * @return UserModel|null
          */
         public function getUser(): ?UserModel;
+
+        /**
+         * Get the ID of the user associated with this payment method.
+         */
+        public function getUserId(): ?int;
 
         /**
          * Set the user associated with this payment method.

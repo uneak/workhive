@@ -8,14 +8,25 @@
     use App\Repository\ReservationEquipmentRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents the equipment reserved as part of a reservation.
+     * 
+     * Groups:
+     * - read: Global read group
+     * - write: Global write group
+     * - reservation-equipment:read: Reservation equipment-specific read group
+     * - reservation-equipment:write: Reservation equipment-specific write group
      */
     #[ORM\Entity(repositoryClass: ReservationEquipmentRepository::class)]
     #[ORM\Table(name: 'reservation_equipment')]
     class ReservationEquipment implements ReservationEquipmentModel
     {
+        public const READ_GROUPS = ['read', ReservationEquipmentModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', ReservationEquipmentModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the reservation equipment.
          *
@@ -24,6 +35,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -33,6 +45,8 @@
          */
         #[ORM\ManyToOne(targetEntity: Reservation::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Reservation is required')]
         private ReservationModel $reservation;
 
         /**
@@ -42,6 +56,8 @@
          */
         #[ORM\ManyToOne(targetEntity: Equipment::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+        #[Groups(self::WRITE_GROUPS)]
+        #[Assert\NotNull(message: 'Equipment is required')]
         private EquipmentModel $equipment;
 
         /**
@@ -50,6 +66,12 @@
          * @var int
          */
         #[ORM\Column(type: 'integer')]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotNull(message: 'Quantity is required')]
+        #[Assert\GreaterThan(
+            value: 0,
+            message: 'Quantity must be greater than zero'
+        )]
         private int $quantity;
 
         /**
@@ -58,6 +80,7 @@
          * @var \DateTime
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -66,6 +89,7 @@
          * @var \DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**
@@ -186,5 +210,27 @@
             $this->updatedAt = $updatedAt;
 
             return $this;
+        }
+
+        /**
+         * Get the ID of the reservation associated with this equipment.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getReservationId(): ?int
+        {
+            return $this->reservation?->getId();
+        }
+
+        /**
+         * Get the ID of the equipment associated with this reservation.
+         *
+         * @return int|null
+         */
+        #[Groups(self::READ_GROUPS)]
+        public function getEquipmentId(): ?int
+        {
+            return $this->equipment?->getId();
         }
     }

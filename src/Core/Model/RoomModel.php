@@ -9,6 +9,7 @@
      */
     interface RoomModel extends ObjectModel
     {
+        public const GROUP_PREFIX = 'room';
 
         /**
          * Get the status of the room.

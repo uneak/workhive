@@ -7,6 +7,7 @@ namespace App\Core\Model;
  */
 interface EquipmentModel extends ObjectModel
 {
+    public const GROUP_PREFIX = 'equipment';
 
     /**
      * Get the total stock available for the equipment.
@@ -19,7 +20,6 @@ interface EquipmentModel extends ObjectModel
      * Set the total stock available for the equipment.
      *
      * @param int $totalStock
-     *
      * @return static
      */
     public function setTotalStock(int $totalStock): static;

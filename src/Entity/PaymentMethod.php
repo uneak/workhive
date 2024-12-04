@@ -8,55 +8,93 @@
     use App\Repository\PaymentMethodRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use Symfony\Component\Serializer\Annotation\Groups;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
-     * Represents a payment method associated with a user.
+     * Represents a payment method entity for processing payments.
+     *
+     * This entity stores payment method information associated with a user,
+     * such as credit cards, PayPal accounts, or other payment options.
+     * It ensures secure storage of payment details for future transactions.
+     *
+     * Groups:
+     * - read: Global read access for basic payment method information
+     * - write: Global write access for creating/updating payment methods
+     * - payment-method:read: Specific read access for payment method details
+     * - payment-method:write: Specific write access for payment method management
      */
     #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
     #[ORM\Table(name: 'payment_methods')]
     class PaymentMethod implements PaymentMethodModel
     {
+        public const READ_GROUPS = ['read', PaymentMethodModel::GROUP_PREFIX . ':read'];
+        public const WRITE_GROUPS = ['write', PaymentMethodModel::GROUP_PREFIX . ':write'];
+
         /**
          * The unique identifier of the payment method.
+         * Auto-generated primary key for the payment method entity.
          *
          * @var int|null
          */
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
+        #[Groups(self::READ_GROUPS)]
         private ?int $id = null;
 
         /**
-         * The user associated with this payment method.
+         * The user who owns this payment method.
+         * Represents the many-to-one relationship with the User entity.
          *
          * @var UserModel
          */
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
+        #[Assert\NotNull(message: 'User is required')]
+        #[Groups(self::WRITE_GROUPS)]
         private UserModel $user;
 
         /**
-         * The label or name of the payment method (e.g., "Visa", "PayPal").
+         * The display name or description of the payment method.
+         * Examples: "Personal Visa Card", "Business PayPal Account"
          *
          * @var string
          */
         #[ORM\Column(type: 'string', length: 100)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Payment method label is required')]
+        #[Assert\Length(
+            max: 100,
+            maxMessage: 'Payment method label cannot be longer than {{ limit }} characters'
+        )]
         private string $label;
 
         /**
-         * The type of the payment method (e.g., "credit_card", "paypal").
+         * The type identifier for the payment method.
+         * Defines the payment processing system to be used.
+         * Examples: "credit_card", "paypal", "stripe"
          *
          * @var string
          */
         #[ORM\Column(type: 'string', length: 50)]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Assert\NotBlank(message: 'Payment method type is required')]
+        #[Assert\Length(
+            max: 50,
+            maxMessage: 'Payment method type cannot be longer than {{ limit }} characters'
+        )]
         private string $type;
 
         /**
-         * Additional data for the payment method (e.g., card details, PayPal ID).
+         * Secure storage for payment method specific details.
+         * Contains encrypted or tokenized payment information.
+         * Structure varies based on payment method type.
          *
          * @var array
          */
         #[ORM\Column(type: 'json')]
+        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private array $data;
 
         /**
@@ -65,6 +103,7 @@
          * @var DateTime
          */
         #[ORM\Column(type: 'datetime')]
+        #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -73,6 +112,7 @@
          * @var DateTime|null
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
+        #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**
@@ -107,6 +147,7 @@
          * Set the user associated with this payment method.
          *
          * @param UserModel|null $user
+         *
          * @return $this
          */
         public function setUser(?UserModel $user): static
@@ -117,7 +158,7 @@
         }
 
         /**
-         * Get the label or name of the payment method.
+         * Get the display name or description of the payment method.
          *
          * @return string
          */
@@ -127,9 +168,10 @@
         }
 
         /**
-         * Set the label or name of the payment method.
+         * Set the display name or description of the payment method.
          *
          * @param string $label
+         *
          * @return $this
          */
         public function setLabel(string $label): static
@@ -140,7 +182,7 @@
         }
 
         /**
-         * Get the type of the payment method.
+         * Get the type identifier for the payment method.
          *
          * @return string
          */
@@ -150,9 +192,10 @@
         }
 
         /**
-         * Set the type of the payment method.
+         * Set the type identifier for the payment method.
          *
          * @param string $type
+         *
          * @return $this
          */
         public function setType(string $type): static
@@ -163,7 +206,7 @@
         }
 
         /**
-         * Get additional data for the payment method.
+         * Get secure storage for payment method specific details.
          *
          * @return array
          */
@@ -173,9 +216,10 @@
         }
 
         /**
-         * Set additional data for the payment method.
+         * Set secure storage for payment method specific details.
          *
          * @param array|PaymentOptionsInterface $data
+         *
          * @return $this
          */
         public function setData(array|PaymentOptionsInterface $data): static
@@ -221,6 +265,7 @@
          * Set the timestamp when the payment method was last updated.
          *
          * @param DateTime|null $updatedAt
+         *
          * @return $this
          */
         public function setUpdatedAt(?DateTime $updatedAt): static
@@ -228,5 +273,11 @@
             $this->updatedAt = $updatedAt;
 
             return $this;
+        }
+
+        #[Groups(self::READ_GROUPS)]
+        public function getUserId(): ?int
+        {
+            return $this->user->getId();
         }
     }
