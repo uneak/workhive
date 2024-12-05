@@ -2,7 +2,9 @@
 
     namespace App\Controller\Api;
 
+    use App\Core\Model\ObjectModel;
     use App\Core\Services\Manager\CrudManagerInterface;
+    use OpenApi\Attributes as OA;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\JsonResponse;
     use Symfony\Component\HttpFoundation\Request;
@@ -19,18 +21,12 @@
      * - Validation handling with detailed error responses
      * - Serialization of entities with group support
      * - Pre-processing hooks for custom data manipulation
+     * - Advanced filtering, sorting and pagination
      *
-     * @template T of \App\Core\Model\ObjectModel
+     * @template T of ObjectModel
      */
     abstract class AbstractApiController extends AbstractController
     {
-        /**
-         * The class name of the entity this controller manages
-         *
-         * @var class-string<T>
-         */
-        protected string $entityClass;
-
         /**
          * Constructor
          *
@@ -43,20 +39,33 @@
             protected readonly SerializerInterface $serializer,
             protected readonly ValidatorInterface $validator,
             protected readonly CrudManagerInterface $manager,
-            string $entityClass,
+            protected readonly string $entityClass,
         ) {
-            $this->entityClass = $entityClass;
         }
 
         /**
-         * List all entities
-         *
-         * @return JsonResponse List of entities serialized with the ':read' group
+         * List all entities with filtering, sorting and pagination
          */
-        protected function listAction(): JsonResponse
+        protected function listEntities(Request $request, string $serializationGroup = 'default'): JsonResponse
         {
-            $entities = $this->manager->all();
-            $data = $this->serializer->serialize($entities, 'json', ['groups' => $this->entityClass::GROUP_PREFIX . ':read']);
+            $filters = [];
+            if ($request->query->has('filters')) {
+                $filtersParam = $request->query->get('filters');
+                $filters = is_array($filtersParam) ? $filtersParam : [$filtersParam];
+            }
+
+            $order = $request->query->get('order', 'asc');
+            $page = (int) $request->query->get('page', 1);
+            $limit = (int) $request->query->get('limit', 10);
+
+            $entities = $this->manager->all(
+                filters: $filters,
+                orderBy: ['name' => strtoupper($order)],
+                limit: $limit,
+                offset: ($page - 1) * $limit
+            );
+
+            $data = $this->serializer->serialize($entities, 'json', ['groups' => $serializationGroup]);
 
             return new JsonResponse($data, 200, [], true);
         }
@@ -64,12 +73,9 @@
         /**
          * Create a new entity
          *
-         * @param Request       $request            The HTTP request containing entity data
-         * @param callable|null $preProcessCallback Optional callback to modify data before hydration
-         *
-         * @return JsonResponse The created entity or validation errors
+         * @param callable|null $dataProcessor Callback to process data before entity hydration
          */
-        protected function createAction(Request $request, ?callable $preProcessCallback = null): JsonResponse
+        protected function createEntity(Request $request, ?string $defaultStatus = null, ?callable $dataProcessor = null): JsonResponse
         {
             $data = json_decode($request->getContent(), true);
 
@@ -77,24 +83,25 @@
                 return new JsonResponse(['error' => 'Invalid JSON'], 400);
             }
 
+            if ($defaultStatus && !isset($data['status'])) {
+                $data['status'] = $defaultStatus;
+            }
+
+            if ($dataProcessor) {
+                $data = $dataProcessor($data);
+            }
+
             $entity = new $this->entityClass();
 
             try {
-                // Allow pre-processing of data if needed
-                if ($preProcessCallback) {
-                    $data = $preProcessCallback($data, $entity);
-                }
-
                 $this->hydrateEntity($entity, $data);
 
-                // Validation
                 $errors = $this->validator->validate($entity);
 
                 if (count($errors) > 0) {
                     return $this->getValidationErrorResponse($errors);
                 }
 
-                // Persist to database
                 $this->manager->save($entity, true);
 
                 return new JsonResponse(['message' => $this->getEntityName() . ' created successfully'], 201);
@@ -102,7 +109,7 @@
             } catch (\Exception $e) {
                 return new JsonResponse(
                     [
-                        'error'   => 'Unable to create ' . strtolower($this->getEntityName()),
+                        'error' => 'Unable to create ' . $this->getEntityName(),
                         'details' => $e->getMessage()
                     ],
                     400
@@ -111,13 +118,9 @@
         }
 
         /**
-         * Show a specific entity by ID
-         *
-         * @param int $id The entity ID
-         *
-         * @return JsonResponse The entity data or 404 if not found
+         * Show a specific entity
          */
-        protected function showAction(int $id): JsonResponse
+        protected function showEntity(int $id, string $serializationGroup = 'default'): JsonResponse
         {
             $entity = $this->manager->get($id);
 
@@ -128,21 +131,17 @@
                 );
             }
 
-            $data = $this->serializer->serialize($entity, 'json', ['groups' => $this->entityClass::GROUP_PREFIX . ':read']);
+            $data = $this->serializer->serialize($entity, 'json', ['groups' => $serializationGroup]);
 
             return new JsonResponse($data, 200, [], true);
         }
 
         /**
-         * Edit an existing entity
+         * Update an existing entity
          *
-         * @param Request       $request            The HTTP request containing updated data
-         * @param int           $id                 The entity ID to update
-         * @param callable|null $preProcessCallback Optional callback to modify data before hydration
-         *
-         * @return JsonResponse The updated entity or validation errors
+         * @param callable|null $dataProcessor Callback to process data before entity hydration
          */
-        protected function editAction(Request $request, int $id, ?callable $preProcessCallback = null): JsonResponse
+        protected function updateEntity(Request $request, int $id, ?callable $dataProcessor = null): JsonResponse
         {
             $data = json_decode($request->getContent(), true);
 
@@ -159,22 +158,19 @@
                 );
             }
 
-            try {
-                // Allow pre-processing of data if needed
-                if ($preProcessCallback) {
-                    $data = $preProcessCallback($data, $entity);
-                }
+            if ($dataProcessor) {
+                $data = $dataProcessor($data, $entity);
+            }
 
+            try {
                 $this->hydrateEntity($entity, $data);
 
-                // Validation
                 $errors = $this->validator->validate($entity);
 
                 if (count($errors) > 0) {
                     return $this->getValidationErrorResponse($errors);
                 }
 
-                // Persist to database
                 $this->manager->save($entity, true);
 
                 return new JsonResponse(['message' => $this->getEntityName() . ' updated successfully'], 200);
@@ -182,7 +178,7 @@
             } catch (\Exception $e) {
                 return new JsonResponse(
                     [
-                        'error'   => 'Unable to update ' . strtolower($this->getEntityName()),
+                        'error' => 'Unable to update ' . $this->getEntityName(),
                         'details' => $e->getMessage()
                     ],
                     400
@@ -192,12 +188,8 @@
 
         /**
          * Delete an entity
-         *
-         * @param int $id The entity ID to delete
-         *
-         * @return JsonResponse Success message or error if deletion fails
          */
-        protected function deleteAction(int $id): JsonResponse
+        protected function deleteEntity(int $id): JsonResponse
         {
             $entity = $this->manager->get($id);
 
@@ -210,12 +202,11 @@
 
             try {
                 $this->manager->remove($entity, true);
-
                 return new JsonResponse(['message' => $this->getEntityName() . ' deleted successfully'], 200);
             } catch (\Exception $e) {
                 return new JsonResponse(
                     [
-                        'error'   => 'Unable to delete ' . strtolower($this->getEntityName()),
+                        'error' => 'Unable to delete ' . $this->getEntityName(),
                         'details' => $e->getMessage()
                     ],
                     400
@@ -225,22 +216,15 @@
 
         /**
          * Get the entity name from the class name
-         *
-         * @return string The short name of the entity class (e.g., "User" from "App\Entity\User")
          */
         protected function getEntityName(): string
         {
             $parts = explode('\\', $this->entityClass);
-
             return end($parts);
         }
 
         /**
          * Format validation errors into a structured response
-         *
-         * @param \Symfony\Component\Validator\ConstraintViolationListInterface $errors List of validation errors
-         *
-         * @return JsonResponse Formatted error response with details for each violation
          */
         protected function getValidationErrorResponse($errors): JsonResponse
         {
@@ -248,14 +232,14 @@
             foreach ($errors as $error) {
                 $errorMessages[] = [
                     'message' => $error->getMessage(),
-                    'path'    => $error->getPropertyPath(),
-                    'cause'   => $error->getCause(),
+                    'path' => $error->getPropertyPath(),
+                    'cause' => $error->getCause(),
                 ];
             }
 
             return new JsonResponse(
                 [
-                    'error'   => 'Validation failed',
+                    'error' => 'Validation failed',
                     'details' => $errorMessages,
                 ],
                 400
@@ -264,13 +248,6 @@
 
         /**
          * Hydrate an entity with data, handling Enum conversions
-         *
-         * This method uses PropertyAccess to set values on the entity and automatically
-         * converts string values to their corresponding Enum instances when the property
-         * type is an Enum. It supports both BackedEnum and UnitEnum types.
-         *
-         * @param object              $entity The entity to hydrate
-         * @param array<string,mixed> $data   The data to set on the entity
          */
         protected function hydrateEntity(object $entity, array $data): void
         {
@@ -282,7 +259,6 @@
                     continue;
                 }
 
-                // Get property type for Enum conversion
                 try {
                     $property = $entityReflection->getProperty($key);
                     $type = $property->getType();
@@ -291,11 +267,9 @@
                         $typeName = $type->getName();
                         if (enum_exists($typeName)) {
                             if (is_string($value)) {
-                                // Handle BackedEnum
                                 if (is_subclass_of($typeName, \BackedEnum::class)) {
                                     $value = $typeName::from($value);
-                                } // Handle UnitEnum
-                                else {
+                                } else {
                                     $cases = $typeName::cases();
                                     foreach ($cases as $case) {
                                         if ($case->name === $value) {

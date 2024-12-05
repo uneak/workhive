@@ -11,6 +11,6 @@
         /**
          * @return array<ObjectModel>
          */
-        public function all(): array;
+        public function all(array $filters = [], array $orderBy = [], ?int $limit = null, ?int $offset = null): array;
         public function remove(ObjectModel $entity, bool $flush = false): void;
     }

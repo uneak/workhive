@@ -9,21 +9,28 @@
     use App\Repository\PaymentRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents a payment made for a reservation.
-     * 
+     *
      * This entity represents a payment transaction in the application.
      * It tracks payment details, status, and associated reservation.
-     * 
+     *
      * Groups:
      * - read: Global read group
      * - write: Global write group
      * - payment:read: Payment-specific read group
      * - payment:write: Payment-specific write group
      */
+    #[OA\Schema(
+        title: 'Payment',
+        description: 'Represents a payment transaction for a reservation',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: PaymentRepository::class)]
     #[ORM\Table(name: 'payments')]
     class Payment implements PaymentModel
@@ -36,6 +43,12 @@
          *
          * @var int|null
          */
+        #[OA\Property(
+            property: 'id',
+            description: 'The unique identifier of the payment',
+            type: 'integer',
+            example: 1
+        )]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
@@ -47,6 +60,10 @@
          *
          * @var ReservationModel|null
          */
+        #[OA\Property(
+            ref: new Model(type: Reservation::class),
+            description: 'The reservation associated with this payment'
+        )]
         #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'payments')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         #[Groups(self::WRITE_GROUPS)]
@@ -58,6 +75,10 @@
          *
          * @var PaymentMethodModel|null
          */
+        #[OA\Property(
+            ref: new Model(type: PaymentMethod::class),
+            description: 'The payment method used for this payment'
+        )]
         #[ORM\ManyToOne(targetEntity: PaymentMethod::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         #[Groups(self::WRITE_GROUPS)]
@@ -69,6 +90,14 @@
          *
          * @var float
          */
+        #[OA\Property(
+            property: 'amount',
+            description: 'The amount paid',
+            type: 'number',
+            format: 'float',
+            minimum: 0,
+            example: 99.99
+        )]
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Amount is required')]
@@ -80,6 +109,10 @@
          *
          * @var PaymentStatus
          */
+        #[OA\Property(
+            ref: new Model(type: PaymentStatus::class),
+            description: 'The current status of the payment'
+        )]
         #[ORM\Column(type: 'string', enumType: PaymentStatus::class)]
         #[Groups(self::READ_GROUPS)]
         #[Assert\NotNull(message: 'Payment status is required')]
@@ -90,6 +123,13 @@
          *
          * @var \DateTime
          */
+        #[OA\Property(
+            property: 'createdAt',
+            description: 'The timestamp when the payment was created',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T12:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
@@ -99,6 +139,14 @@
          *
          * @var \DateTime|null
          */
+        #[OA\Property(
+            property: 'updatedAt',
+            description: 'The timestamp when the payment was last updated',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-02T15:30:00+00:00',
+            nullable: true
+        )]
         #[ORM\Column(type: 'datetime', nullable: true)]
         #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt = null;
@@ -150,6 +198,12 @@
          *
          * @return int|null
          */
+        #[OA\Property(
+            property: 'reservationId',
+            description: 'The ID of the reservation associated with this payment',
+            type: 'integer',
+            example: 1
+        )]
         #[Groups(self::READ_GROUPS)]
         public function getReservationId(): ?int
         {
@@ -185,6 +239,12 @@
          *
          * @return int|null
          */
+        #[OA\Property(
+            property: 'paymentMethodId',
+            description: 'The ID of the payment method used for this payment',
+            type: 'integer',
+            example: 1
+        )]
         #[Groups(self::READ_GROUPS)]
         public function getPaymentMethodId(): ?int
         {

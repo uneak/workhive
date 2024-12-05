@@ -8,21 +8,28 @@
     use DateTimeInterface;
     use Doctrine\DBAL\Types\Types;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents the weekly schedule for a room.
-     * 
+     *
      * This entity represents weekly recurring schedules for rooms.
      * It defines regular opening hours for each day of the week.
-     * 
+     *
      * Groups:
      * - read: Global read group
      * - write: Global write group
      * - schedule:read: Schedule-specific read group
      * - schedule:write: Schedule-specific write group
      */
+    #[OA\Schema(
+        title: 'WeekSchedules',
+        description: 'Represents weekly recurring schedules for rooms or equipment',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: WeekSchedulesRepository::class)]
     #[ORM\Table(name: 'week_schedules')]
     class WeekSchedules implements WeekSchedulesModel
@@ -35,6 +42,12 @@
          *
          * @var int|null
          */
+        #[OA\Property(
+            property: 'id',
+            description: 'The unique identifier of the weekly schedule',
+            type: 'integer',
+            example: 1
+        )]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column]
@@ -46,6 +59,13 @@
          *
          * @var \DateTimeInterface|null
          */
+        #[OA\Property(
+            property: 'startedAt',
+            description: 'The time the schedule starts on a given day',
+            type: 'string',
+            format: 'time',
+            example: '09:00:00'
+        )]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Start time is required')]
@@ -56,6 +76,13 @@
          *
          * @var \DateTimeInterface|null
          */
+        #[OA\Property(
+            property: 'endedAt',
+            description: 'The time the schedule ends on a given day',
+            type: 'string',
+            format: 'time',
+            example: '17:00:00'
+        )]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'End time is required')]
@@ -66,13 +93,21 @@
          *
          * @var int|null
          */
+        #[OA\Property(
+            property: 'weekDay',
+            description: 'The day of the week for the schedule (0 = Sunday, 6 = Saturday)',
+            type: 'integer',
+            maximum: 6,
+            minimum: 0,
+            example: 1
+        )]
         #[ORM\Column(type: Types::SMALLINT)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Day of week is required')]
         #[Assert\Range(
+            notInRangeMessage: 'Day of week must be between {{ min }} and {{ max }}',
             min: 0,
-            max: 6,
-            notInRangeMessage: 'Day of week must be between {{ min }} and {{ max }}'
+            max: 6
         )]
         private ?int $weekDay = null;
 
@@ -81,6 +116,10 @@
          *
          * @var RoomModel|null
          */
+        #[OA\Property(
+            ref: new Model(type: Room::class),
+            description: 'The room associated with this schedule'
+        )]
         #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'weekSchedules')]
         #[ORM\JoinColumn(nullable: false)]
         #[Groups(self::WRITE_GROUPS)]
@@ -198,6 +237,12 @@
          *
          * @return int|null
          */
+        #[OA\Property(
+            property: 'roomId',
+            description: 'The ID of the room associated with this schedule',
+            type: 'integer',
+            example: 1
+        )]
         #[Groups(self::READ_GROUPS)]
         public function getRoomId(): ?int
         {

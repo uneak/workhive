@@ -8,6 +8,8 @@
     use DateTimeInterface;
     use Doctrine\DBAL\Types\Types;
     use Doctrine\ORM\Mapping as ORM;
+    use Nelmio\ApiDocBundle\Attribute\Model;
+    use OpenApi\Attributes as OA;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
@@ -20,6 +22,11 @@
      * - schedule:read: Schedule-specific read group
      * - schedule:write: Schedule-specific write group
      */
+    #[OA\Schema(
+        title: 'DateSchedules',
+        description: 'Represents specific date schedules for rooms or equipment availability',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: DateSchedulesRepository::class)]
     #[ORM\Table(name: 'date_schedules')]
     class DateSchedules implements DateSchedulesModel
@@ -29,9 +36,8 @@
 
         /**
          * The unique identifier of the schedule.
-         *
-         * @var int|null
          */
+        #[OA\Property(description: 'The unique identifier of the schedule', type: 'integer', example: 1)]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column]
@@ -40,18 +46,16 @@
 
         /**
          * An optional name or label for the schedule.
-         *
-         * @var string|null
          */
+        #[OA\Property(description: 'An optional name or label for the schedule', type: 'string', example: 'Holiday Schedule', nullable: true)]
         #[ORM\Column(length: 255, nullable: true)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?string $name = null;
 
         /**
          * The date of the schedule.
-         *
-         * @var \DateTimeInterface|null
          */
+        #[OA\Property(description: 'The date of the schedule', type: 'string', format: 'date', example: '2024-01-01')]
         #[ORM\Column(type: Types::DATE_MUTABLE)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Date is required')]
@@ -59,9 +63,8 @@
 
         /**
          * The starting time of the schedule.
-         *
-         * @var \DateTimeInterface|null
          */
+        #[OA\Property(description: 'The starting time of the schedule', type: 'string', format: 'time', example: '09:00:00')]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Opening time is required')]
@@ -69,9 +72,8 @@
 
         /**
          * The ending time of the schedule.
-         *
-         * @var \DateTimeInterface|null
          */
+        #[OA\Property(description: 'The ending time of the schedule', type: 'string', format: 'time', example: '17:00:00')]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Closing time is required')]
@@ -79,18 +81,16 @@
 
         /**
          * Indicates whether the schedule is open during the specified time.
-         *
-         * @var bool|null
          */
+        #[OA\Property(description: 'Indicates whether the schedule is open during the specified time', type: 'boolean', example: true)]
         #[ORM\Column]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?bool $isOpen = null;
 
         /**
          * The room associated with this schedule.
-         *
-         * @var RoomModel|null
          */
+        #[OA\Property(ref: new Model(type: Room::class), description: 'The room associated with this schedule')]
         #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'dateSchedules')]
         #[ORM\JoinColumn(nullable: false)]
         #[Groups(self::WRITE_GROUPS)]

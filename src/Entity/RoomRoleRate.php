@@ -7,21 +7,28 @@
     use App\Core\Model\RoomRoleRateModel;
     use App\Repository\RoomRoleRateRepository;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents the hourly rate for a room based on the user's role.
-     * 
+     *
      * This entity defines pricing rates for rooms based on user roles,
      * allowing different pricing strategies for different user categories.
-     * 
+     *
      * Groups:
      * - read: Global read access for basic rate information
      * - write: Global write access for creating/updating rates
      * - room_role_rate:read: Specific read access for room role rate details
      * - room_role_rate:write: Specific write access for room role rate management
      */
+    #[OA\Schema(
+        title: 'RoomRoleRate',
+        description: 'Represents the hourly rate for a room based on the user\'s role',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: RoomRoleRateRepository::class)]
     #[ORM\Table(name: 'room_role_rate')]
     class RoomRoleRate implements RoomRoleRateModel
@@ -45,6 +52,10 @@
          *
          * @var RoomModel
          */
+        #[OA\Property(
+            ref: new Model(type: Room::class),
+            description: 'The room associated with this rate'
+        )]
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
         #[Groups(self::WRITE_GROUPS)]
@@ -56,6 +67,10 @@
          *
          * @var UserRole
          */
+        #[OA\Property(
+            ref: new Model(type: UserRole::class),
+            description: 'The user role for which this rate applies'
+        )]
         #[ORM\Column(type: 'string', enumType: UserRole::class)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotBlank(message: 'User role is required')]

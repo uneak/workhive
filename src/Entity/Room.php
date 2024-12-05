@@ -3,6 +3,8 @@
     namespace App\Entity;
 
     use App\Core\Enum\Status;
+    use Nelmio\ApiDocBundle\Attribute\Model;
+    use OpenApi\Attributes as OA;
     use App\Core\Model\DateSchedulesModel;
     use App\Core\Model\ReservationModel;
     use App\Core\Model\RoomModel;
@@ -17,17 +19,22 @@
 
     /**
      * Room Entity
-     * 
+     *
      * This entity represents a room that can be reserved in the application.
      * It includes physical characteristics like dimensions and capacity,
      * as well as administrative information like status and description.
-     * 
+     *
      * Groups:
      * - read: Global read group
      * - write: Global write group
      * - room:read: Room-specific read group
      * - room:write: Room-specific write group
      */
+    #[OA\Schema(
+        title: 'Room',
+        description: 'Represents a room that can be reserved for various purposes',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: RoomRepository::class)]
     #[ORM\Table(name: 'rooms')]
     class Room implements RoomModel
@@ -71,9 +78,9 @@
             message: 'Capacity must be a whole number'
         )]
         #[Assert\Range(
+            notInRangeMessage: 'Capacity must be between {{ min }} and {{ max }} people',
             min: 1,
-            max: 100,
-            notInRangeMessage: 'Capacity must be between {{ min }} and {{ max }} people'
+            max: 100
         )]
         private int $capacity;
 
@@ -89,9 +96,9 @@
             message: 'Width must be a decimal number'
         )]
         #[Assert\Range(
+            notInRangeMessage: 'Width must be between {{ min }} and {{ max }} meters',
             min: 0.1,
-            max: 50.0,
-            notInRangeMessage: 'Width must be between {{ min }} and {{ max }} meters'
+            max: 50.0
         )]
         private float $width;
 
@@ -107,9 +114,9 @@
             message: 'Length must be a decimal number'
         )]
         #[Assert\Range(
+            notInRangeMessage: 'Length must be between {{ min }} and {{ max }} meters',
             min: 0.1,
-            max: 50.0,
-            notInRangeMessage: 'Length must be between {{ min }} and {{ max }} meters'
+            max: 50.0
         )]
         private float $length;
 
@@ -117,6 +124,10 @@
          * The current status of the room.
          * Indicates whether the room is available for booking.
          */
+        #[OA\Property(
+            ref: new Model(type: Status::class),
+            description: 'Status of the room'
+        )]
         #[ORM\Column(enumType: Status::class)]
         #[Groups(self::READ_GROUPS)]
         #[Assert\NotNull(message: 'Status is required')]

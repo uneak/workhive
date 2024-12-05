@@ -2,6 +2,13 @@
 
     namespace App\Core\Enum;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        description: 'Status of a room reservation',
+        type: 'string',
+        enum: ['pending', 'confirmed', 'cancelled']
+    )]
     enum ReservationStatus: string
     {
         case PENDING = 'pending';
@@ -19,6 +26,7 @@
             foreach (self::cases() as $case) {
                 $cases[$case->name] = $case->value;
             }
+
             return $cases;
         }
     }

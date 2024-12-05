@@ -6,18 +6,24 @@
     use App\Repository\EquipmentRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents a piece of equipment that can be associated with rooms or reservations.
-     * 
+     *
      * Groups:
      * - read: Global read group
      * - write: Global write group
      * - equipment:read: Equipment-specific read group
      * - equipment:write: Equipment-specific write group
      */
+    #[OA\Schema(
+        title: 'Equipment',
+        description: 'Represents a piece of equipment that can be associated with rooms or reservations',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
     #[ORM\Table(name: 'equipments')]
     class Equipment implements EquipmentModel
@@ -30,6 +36,12 @@
          *
          * @var int|null
          */
+        #[OA\Property(
+            property: 'id',
+            description: 'The unique identifier of the equipment',
+            type: 'integer',
+            example: 1
+        )]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
@@ -41,6 +53,14 @@
          *
          * @var string
          */
+        #[OA\Property(
+            property: 'name',
+            description: 'The name of the equipment',
+            type: 'string',
+            maxLength: 100,
+            minLength: 2,
+            example: 'Projector'
+        )]
         #[ORM\Column(type: 'string', length: 100)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotBlank(message: 'Equipment name is required')]
@@ -57,6 +77,14 @@
          *
          * @var string|null
          */
+        #[OA\Property(
+            property: 'description',
+            description: 'A brief description of the equipment',
+            type: 'string',
+            maxLength: 1000,
+            example: 'High-definition projector with HDMI and VGA inputs',
+            nullable: true
+        )]
         #[ORM\Column(type: 'text', nullable: true)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\Length(
@@ -70,6 +98,13 @@
          *
          * @var string|null
          */
+        #[OA\Property(
+            property: 'photo',
+            description: 'A path or URL to a photo representing the equipment',
+            type: 'string',
+            example: '/uploads/equipment/projector.jpg',
+            nullable: true
+        )]
         #[ORM\Column(type: 'string', length: 255, nullable: true)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private ?string $photo = null;
@@ -79,6 +114,13 @@
          *
          * @var int
          */
+        #[OA\Property(
+            property: 'totalStock',
+            description: 'The total stock available for the equipment',
+            type: 'integer',
+            minimum: 0,
+            example: 5
+        )]
         #[ORM\Column(type: 'integer')]
         private int $totalStock;
 
@@ -87,6 +129,13 @@
          *
          * @var \DateTime
          */
+        #[OA\Property(
+            property: 'createdAt',
+            description: 'The timestamp when the equipment was created',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T12:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
@@ -96,6 +145,14 @@
          *
          * @var \DateTime|null
          */
+        #[OA\Property(
+            property: 'updatedAt',
+            description: 'The timestamp when the equipment was last updated',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-02T15:30:00+00:00',
+            nullable: true
+        )]
         #[ORM\Column(type: 'datetime', nullable: true)]
         #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;

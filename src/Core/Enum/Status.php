@@ -2,6 +2,13 @@
 
     namespace App\Core\Enum;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        description: 'Room status',
+        type: 'string',
+        enum: ['active', 'inactive']
+    )]
     enum Status: string
     {
         case ACTIVE = 'active';
@@ -18,7 +25,7 @@
             foreach (self::cases() as $case) {
                 $cases[$case->name] = $case->value;
             }
+
             return $cases;
         }
-
     }

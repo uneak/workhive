@@ -8,18 +8,25 @@
     use App\Repository\ReservationEquipmentRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
     /**
      * Represents the equipment reserved as part of a reservation.
-     * 
+     *
      * Groups:
      * - read: Global read group
      * - write: Global write group
      * - reservation-equipment:read: Reservation equipment-specific read group
      * - reservation-equipment:write: Reservation equipment-specific write group
      */
+    #[OA\Schema(
+        title: 'ReservationEquipment',
+        description: 'Represents equipment included in a reservation with its quantity',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: ReservationEquipmentRepository::class)]
     #[ORM\Table(name: 'reservation_equipment')]
     class ReservationEquipment implements ReservationEquipmentModel
@@ -32,6 +39,12 @@
          *
          * @var int|null
          */
+        #[OA\Property(
+            property: 'id',
+            description: 'The unique identifier of the reservation equipment',
+            type: 'integer',
+            example: 1
+        )]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
@@ -41,30 +54,45 @@
         /**
          * The reservation associated with this equipment.
          *
-         * @var ReservationModel
+         * @var ?ReservationModel
          */
+        #[OA\Property(
+            ref: new Model(type: Reservation::class),
+            description: 'The reservation associated with this equipment'
+        )]
         #[ORM\ManyToOne(targetEntity: Reservation::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
         #[Groups(self::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Reservation is required')]
-        private ReservationModel $reservation;
+        private ?ReservationModel $reservation = null;
 
         /**
          * The equipment associated with this reservation.
          *
          * @var EquipmentModel
          */
+        #[OA\Property(
+            ref: new Model(type: Equipment::class),
+            description: 'The equipment associated with this reservation'
+        )]
         #[ORM\ManyToOne(targetEntity: Equipment::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
         #[Groups(self::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Equipment is required')]
-        private EquipmentModel $equipment;
+        private ?EquipmentModel $equipment = null;
 
         /**
          * The quantity of the equipment reserved.
          *
          * @var int
          */
+        #[OA\Property(
+            property: 'quantity',
+            description: 'The quantity of the equipment reserved',
+            type: 'integer',
+            minimum: 1,
+            example: 2
+        )]
         #[ORM\Column(type: 'integer')]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Quantity is required')]
@@ -79,6 +107,13 @@
          *
          * @var \DateTime
          */
+        #[OA\Property(
+            property: 'createdAt',
+            description: 'The timestamp when this record was created',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T12:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
@@ -88,6 +123,14 @@
          *
          * @var \DateTime|null
          */
+        #[OA\Property(
+            property: 'updatedAt',
+            description: 'The timestamp when this record was last updated',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-02T15:30:00+00:00',
+            nullable: true
+        )]
         #[ORM\Column(type: 'datetime', nullable: true)]
         #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;

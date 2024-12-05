@@ -9,22 +9,29 @@
     use App\Repository\ReservationRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Component\Validator\Constraints as Assert;
     use Symfony\Component\Serializer\Annotation\Groups;
 
     /**
      * Reservation Entity
-     * 
+     *
      * This entity represents a room reservation made by a user.
      * It includes booking details such as start and end times,
      * the associated room and user, and the current status of the reservation.
-     * 
+     *
      * Groups:
      * - read: Global read group
      * - write: Global write group
      * - reservation:read: Reservation-specific read group
      * - reservation:write: Reservation-specific write group
      */
+    #[OA\Schema(
+        title: 'Reservation',
+        description: 'Represents a room reservation with associated equipment and payment details',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: ReservationRepository::class)]
     #[ORM\Table(name: 'reservations')]
     class Reservation implements ReservationModel
@@ -35,6 +42,12 @@
         /**
          * The unique identifier of the reservation.
          */
+        #[OA\Property(
+            property: 'id',
+            description: 'The unique identifier of the reservation',
+            type: 'integer',
+            example: 1
+        )]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
@@ -45,6 +58,10 @@
          * The room being reserved.
          * Must be a valid room from the system.
          */
+        #[OA\Property(
+            ref: new Model(type: Room::class),
+            description: 'The room being reserved'
+        )]
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false)]
         #[Groups(self::WRITE_GROUPS)]
@@ -55,6 +72,10 @@
          * The user making the reservation.
          * Must be a valid user from the system.
          */
+        #[OA\Property(
+            ref: new Model(type: User::class),
+            description: 'The user making the reservation'
+        )]
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
         #[Groups(self::WRITE_GROUPS)]
@@ -65,6 +86,13 @@
          * The start date and time of the reservation.
          * Must be today or in the future.
          */
+        #[OA\Property(
+            property: 'startAt',
+            description: 'The start date and time of the reservation',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T09:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'Start date is required')]
@@ -79,6 +107,13 @@
          * The end date and time of the reservation.
          * Must be after the start date.
          */
+        #[OA\Property(
+            property: 'endAt',
+            description: 'The end date and time of the reservation',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T17:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotNull(message: 'End date is required')]
@@ -93,6 +128,10 @@
          * The current status of the reservation.
          * Tracks the state of the reservation (pending, confirmed, etc.).
          */
+        #[OA\Property(
+            ref: new Model(type: ReservationStatus::class),
+            description: 'The current status of the reservation'
+        )]
         #[ORM\Column(enumType: ReservationStatus::class)]
         #[Groups(self::READ_GROUPS)]
         #[Assert\NotNull(message: 'Status is required')]
@@ -102,6 +141,13 @@
          * The timestamp when the reservation was created.
          * Automatically set when the reservation is made.
          */
+        #[OA\Property(
+            property: 'createdAt',
+            description: 'The timestamp when the reservation was created',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T12:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups(self::READ_GROUPS)]
         #[Assert\NotNull(message: 'Created date is required')]
@@ -111,6 +157,14 @@
          * The timestamp when the reservation was last updated.
          * Optional, updated automatically when changes are made.
          */
+        #[OA\Property(
+            property: 'updatedAt',
+            description: 'The timestamp when the reservation was last updated',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-02T15:30:00+00:00',
+            nullable: true
+        )]
         #[ORM\Column(type: 'datetime', nullable: true)]
         #[Groups(self::READ_GROUPS)]
         #[Assert\Type(type: DateTime::class)]
@@ -163,6 +217,12 @@
          *
          * @return int|null
          */
+        #[OA\Property(
+            property: 'roomId',
+            description: 'The ID of the room associated with the reservation',
+            type: 'integer',
+            example: 1
+        )]
         #[Groups(self::READ_GROUPS)]
         public function getRoomId(): ?int
         {
@@ -197,6 +257,12 @@
          *
          * @return int|null
          */
+        #[OA\Property(
+            property: 'userId',
+            description: 'The ID of the user who made the reservation',
+            type: 'integer',
+            example: 1
+        )]
         #[Groups(self::READ_GROUPS)]
         public function getUserId(): ?int
         {
@@ -289,7 +355,7 @@
          *
          * @return void
          */
-        public function setCreatedAt(\DateTime $createdAt): void
+        public function setCreatedAt(DateTime $createdAt): void
         {
             $this->createdAt = $createdAt;
         }

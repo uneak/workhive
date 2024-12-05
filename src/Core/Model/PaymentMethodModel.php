@@ -27,11 +27,11 @@
         /**
          * Set the user associated with this payment method.
          *
-         * @param UserModel|null $user
+         * @param UserModel $user
          *
          * @return static
          */
-        public function setUser(?UserModel $user): static;
+        public function setUser(UserModel $user): static;
 
         /**
          * Get the type of the payment method.

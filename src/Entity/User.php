@@ -15,13 +15,17 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use OpenApi\Attributes as OA;
 
 /**
- * User Entity
- * 
- * This entity represents a user in the application with their personal information,
- * authentication details, and role-based access control.
+ * Represents a user in the system with authentication and authorization capabilities.
  */
+#[OA\Schema(
+    title: 'User',
+    description: 'Represents a user in the system with their personal information, authentication details, and role-based access control.',
+    type: 'object'
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[UniqueEntity(fields: ['email'], message: 'An account already exists with this email')]
@@ -32,7 +36,15 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
 
     /**
      * The unique identifier of the user.
+     *
+     * @var int|null
      */
+    #[OA\Property(
+        description: 'The unique identifier of the user',
+        type: 'integer',
+        format: 'int64',
+        example: 1
+    )]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -41,8 +53,16 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
 
     /**
      * The first name of the user.
-     * Must be between 2 and 50 characters.
+     *
+     * @var string
      */
+    #[OA\Property(
+        description: 'The first name of the user',
+        type: 'string',
+        maxLength: 50,
+        minLength: 2,
+        example: 'John'
+    )]
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
     #[Assert\NotBlank(message: 'First name is required')]
@@ -56,8 +76,16 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
 
     /**
      * The last name of the user.
-     * Must be between 2 and 50 characters.
+     *
+     * @var string
      */
+    #[OA\Property(
+        description: 'The last name of the user',
+        type: 'string',
+        maxLength: 50,
+        minLength: 2,
+        example: 'Doe'
+    )]
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
     #[Assert\NotBlank(message: 'Last name is required')]
@@ -72,6 +100,13 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
     /**
      * The photo URL of the user (optional).
      */
+    #[OA\Property(
+        description: 'The photo URL of the user',
+        type: 'string',
+        maxLength: 255,
+        example: 'https://example.com/photo.jpg',
+        nullable: true
+    )]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
     private ?string $photo;
@@ -80,6 +115,10 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
      * The role of the user in the application.
      * This determines the user's permissions and access levels.
      */
+    #[OA\Property(
+        ref: new Model(type: UserRole::class),
+        description: 'The role of the user'
+    )]
     #[ORM\Column(enumType: UserRole::class)]
     #[Groups(self::READ_GROUPS)]
     #[Assert\NotNull(message: 'User role is required')]
@@ -89,6 +128,13 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
      * The phone number of the user (optional).
      * Must be a valid phone number format.
      */
+    #[OA\Property(
+        description: 'The phone number of the user',
+        type: 'string',
+        maxLength: 15,
+        example: '+1234567890',
+        nullable: true
+    )]
     #[ORM\Column(type: 'string', length: 15, nullable: true)]
     #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
     #[Assert\Regex(
@@ -103,8 +149,15 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
 
     /**
      * The email address of the user.
-     * Must be unique and in valid email format.
+     *
+     * @var string
      */
+    #[OA\Property(
+        description: 'The email address of the user',
+        type: 'string',
+        format: 'email',
+        example: 'john.doe@example.com'
+    )]
     #[ORM\Column(type: 'string', length: 100, unique: true)]
     #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
     #[Assert\NotBlank(message: 'Email is required')]
@@ -117,8 +170,16 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
 
     /**
      * The hashed password of the user.
-     * Must be at least 6 characters long.
+     *
+     * @var ?string
      */
+    #[OA\Property(
+        description: 'The password of the user (only required during creation/update)',
+        type: 'string',
+        format: 'password',
+        minLength: 6,
+        example: 'StrongP@ssw0rd'
+    )]
     #[ORM\Column(type: 'string')]
     #[Groups(self::WRITE_GROUPS)]
     #[Assert\NotBlank(message: 'Password is required')]
@@ -129,9 +190,14 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
     private ?string $password;
 
     /**
-     * The current status of the user account.
-     * Indicates whether the account is active or inactive.
+     * The status of the user (active or inactive).
+     *
+     * @var Status|null
      */
+    #[OA\Property(
+        ref: new Model(type: Status::class),
+        description: 'The status of the user'
+    )]
     #[ORM\Column(enumType: Status::class)]
     #[Groups(self::READ_GROUPS)]
     #[Assert\NotNull(message: 'Status is required')]
@@ -139,14 +205,31 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
 
     /**
      * The timestamp when the user was created.
+     *
+     * @var DateTime
      */
+    #[OA\Property(
+        description: 'The timestamp when the user was created',
+        type: 'string',
+        format: 'date-time',
+        example: '2024-01-01T12:00:00+00:00'
+    )]
     #[ORM\Column(type: 'datetime')]
     #[Groups(self::READ_GROUPS)]
     private DateTime $createdAt;
 
     /**
      * The timestamp when the user was last updated.
+     *
+     * @var DateTime|null
      */
+    #[OA\Property(
+        description: 'The timestamp when the user was last updated',
+        type: 'string',
+        format: 'date-time',
+        example: '2024-01-02T15:30:00+00:00',
+        nullable: true
+    )]
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(self::READ_GROUPS)]
     private ?DateTime $updatedAt;
@@ -156,6 +239,11 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
      *
      * @var Collection<int, PaymentMethod>
      */
+    #[OA\Property(
+        description: 'The payment methods associated with the user',
+        type: 'array',
+        items: new OA\Items(ref: new Model(type: PaymentMethod::class))
+    )]
     #[ORM\OneToMany(targetEntity: PaymentMethod::class, mappedBy: 'user')]
     private Collection $paymentMethods;
 
@@ -164,6 +252,11 @@ class User implements UserModel, UserInterface, PasswordAuthenticatedUserInterfa
      *
      * @var Collection<int, Reservation>
      */
+    #[OA\Property(
+        description: 'The reservations made by the user',
+        type: 'array',
+        items: new OA\Items(ref: new Model(type: Reservation::class))
+    )]
     #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Collection $reservations;
 

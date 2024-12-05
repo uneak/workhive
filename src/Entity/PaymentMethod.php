@@ -8,6 +8,8 @@
     use App\Repository\PaymentMethodRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use OpenApi\Attributes as OA;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
 
@@ -24,6 +26,11 @@
      * - payment-method:read: Specific read access for payment method details
      * - payment-method:write: Specific write access for payment method management
      */
+    #[OA\Schema(
+        title: 'PaymentMethod',
+        description: 'Represents a payment method available for processing transactions',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
     #[ORM\Table(name: 'payment_methods')]
     class PaymentMethod implements PaymentMethodModel
@@ -37,6 +44,12 @@
          *
          * @var int|null
          */
+        #[OA\Property(
+            property: 'id',
+            description: 'The unique identifier of the payment method',
+            type: 'integer',
+            example: 1
+        )]
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
@@ -49,6 +62,10 @@
          *
          * @var UserModel
          */
+        #[OA\Property(
+            ref: new Model(type: User::class),
+            description: 'The user who owns this payment method'
+        )]
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
         #[Assert\NotNull(message: 'User is required')]
@@ -61,6 +78,13 @@
          *
          * @var string
          */
+        #[OA\Property(
+            property: 'label',
+            description: 'The display name or description of the payment method',
+            type: 'string',
+            maxLength: 100,
+            example: 'Personal Visa Card'
+        )]
         #[ORM\Column(type: 'string', length: 100)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotBlank(message: 'Payment method label is required')]
@@ -77,6 +101,13 @@
          *
          * @var string
          */
+        #[OA\Property(
+            property: 'type',
+            description: 'The type identifier for the payment method (e.g., credit_card, paypal, stripe)',
+            type: 'string',
+            maxLength: 50,
+            example: 'credit_card'
+        )]
         #[ORM\Column(type: 'string', length: 50)]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         #[Assert\NotBlank(message: 'Payment method type is required')]
@@ -93,6 +124,12 @@
          *
          * @var array
          */
+        #[OA\Property(
+            property: 'data',
+            description: 'Secure storage for payment method specific details (encrypted/tokenized)',
+            type: 'object',
+            example: ['last4' => '1234', 'brand' => 'visa']
+        )]
         #[ORM\Column(type: 'json')]
         #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
         private array $data;
@@ -102,6 +139,13 @@
          *
          * @var DateTime
          */
+        #[OA\Property(
+            property: 'createdAt',
+            description: 'The timestamp when the payment method was created',
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T12:00:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime')]
         #[Groups(self::READ_GROUPS)]
         private DateTime $createdAt;
@@ -111,6 +155,14 @@
          *
          * @var DateTime|null
          */
+        #[OA\Property(
+            property: 'updatedAt',
+            description: 'The timestamp when the payment method was last updated',
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            example: '2024-01-02T15:30:00+00:00'
+        )]
         #[ORM\Column(type: 'datetime', nullable: true)]
         #[Groups(self::READ_GROUPS)]
         private ?DateTime $updatedAt;
@@ -136,9 +188,9 @@
         /**
          * Get the user associated with this payment method.
          *
-         * @return UserModel|null
+         * @return UserModel
          */
-        public function getUser(): ?UserModel
+        public function getUser(): UserModel
         {
             return $this->user;
         }
@@ -146,11 +198,11 @@
         /**
          * Set the user associated with this payment method.
          *
-         * @param UserModel|null $user
+         * @param UserModel $user
          *
          * @return $this
          */
-        public function setUser(?UserModel $user): static
+        public function setUser(UserModel $user): static
         {
             $this->user = $user;
 
@@ -240,13 +292,13 @@
         }
 
         /**
-         * Set the timestamp when the equipment was created.
+         * Set the timestamp when the payment method was created.
          *
-         * @param \DateTime $createdAt
+         * @param DateTime $createdAt
          *
          * @return void
          */
-        public function setCreatedAt(\DateTime $createdAt): void
+        public function setCreatedAt(DateTime $createdAt): void
         {
             $this->createdAt = $createdAt;
         }
