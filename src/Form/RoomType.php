@@ -12,6 +12,7 @@
     use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\Form\FormBuilderInterface;
     use Symfony\Component\OptionsResolver\OptionsResolver;
+    use Vich\UploaderBundle\Form\Type\VichImageType;
 
     class RoomType extends AbstractType
     {
@@ -32,23 +33,23 @@
                     ],
                 ])
                 ->add('width', NumberType::class, [
-                    'label' => 'Width (meters)',
+                    'label'    => 'Width (meters)',
                     'required' => true, // Si le champ est obligatoire
-                    'scale' => 2, // Nombre de décimales autorisées
-                    'attr' => [
+                    'scale'    => 2, // Nombre de décimales autorisées
+                    'attr'     => [
                         'placeholder' => 'Enter the width in meters',
-                        'step' => 0.01, // Pour des incréments en décimales
-                        'min' => 0, // Valeur minimale (si applicable)
+                        'step'        => 0.01, // Pour des incréments en décimales
+                        'min'         => 0, // Valeur minimale (si applicable)
                     ],
                 ])
                 ->add('length', NumberType::class, [
-                    'label' => 'Length (meters)',
+                    'label'    => 'Length (meters)',
                     'required' => true, // Si le champ est obligatoire
-                    'scale' => 2, // Nombre de décimales autorisées
-                    'attr'  => [
+                    'scale'    => 2, // Nombre de décimales autorisées
+                    'attr'     => [
                         'placeholder' => 'Enter the length of the room',
                         'step'        => 0.01,
-                        'min' => 0, // Valeur minimale (si applicable)
+                        'min'         => 0, // Valeur minimale (si applicable)
                     ],
                 ])
                 ->add('status', ChoiceType::class, [
@@ -67,13 +68,14 @@
                         'placeholder' => 'Optional description of the room',
                     ],
                 ])
-                ->add('photo', FileType::class, [
-                    'label'    => 'Room Photo',
-                    'required' => false,
-                    'mapped'   => false, // For file uploads, ensure this is handled in the controller
-                    'attr'     => [
-                        'accept' => 'image/*',
-                    ],
+                ->add('photoFile', VichImageType::class, [
+                    'required'        => false,
+                    'allow_delete'    => true,
+                    'delete_label'    => 'delete',
+                    'download_label'  => 'download',
+                    'download_uri'    => true,
+                    'image_uri'       => true,
+                    'asset_helper'    => true,
                 ]);
         }
 

@@ -8,11 +8,11 @@
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
     use Symfony\Component\Form\Extension\Core\Type\EmailType;
-    use Symfony\Component\Form\Extension\Core\Type\FileType;
     use Symfony\Component\Form\Extension\Core\Type\PasswordType;
     use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\Form\FormBuilderInterface;
     use Symfony\Component\OptionsResolver\OptionsResolver;
+    use Vich\UploaderBundle\Form\Type\VichImageType;
 
     class UserType extends AbstractType
     {
@@ -31,13 +31,14 @@
                         'placeholder' => 'Enter last name',
                     ],
                 ])
-                ->add('photo', FileType::class, [
-                    'label'    => 'Profile Photo',
-                    'required' => false,
-                    'mapped'   => false, // Not mapped to the entity
-                    'attr'     => [
-                        'accept' => 'image/*',
-                    ],
+                ->add('photoFile', VichImageType::class, [
+                    'required'        => false,
+                    'allow_delete'    => true,
+                    'delete_label'    => 'delete',
+                    'download_label'  => 'download',
+                    'download_uri'    => true,
+                    'image_uri'       => true,
+                    'asset_helper'    => true,
                 ])
                 ->add('userRole', ChoiceType::class, [
                     'label'        => 'Role',

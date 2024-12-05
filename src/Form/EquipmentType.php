@@ -10,6 +10,7 @@
     use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\Form\FormBuilderInterface;
     use Symfony\Component\OptionsResolver\OptionsResolver;
+    use Vich\UploaderBundle\Form\Type\VichImageType;
 
     class EquipmentType extends AbstractType
     {
@@ -32,14 +33,14 @@
                         'rows' => 4,
                     ],
                 ])
-                ->add('photo', FileType::class, [
-                    'label' => 'Equipment Photo',
-                    'required' => false,
-                    'mapped' => false, // Prevent direct mapping to the entity
-                    'attr' => [
-                        'accept' => 'image/*',
-                        'class' => 'form-control',
-                    ],
+                ->add('photoFile', VichImageType::class, [
+                    'required'        => false,
+                    'allow_delete'    => true,
+                    'delete_label'    => 'delete',
+                    'download_label'  => 'download',
+                    'download_uri'    => true,
+                    'image_uri'       => true,
+                    'asset_helper'    => true,
                 ])
                 ->add('totalStock', IntegerType::class, [
                     'label' => 'Total Stock',

@@ -16,9 +16,10 @@
             <div class="card mt-6" data-animation="true">
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                     <a class="d-block blur-shadow-image">
-                        <img
-                            src="https://demos.creative-tim.com/test/material-dashboard-pro/assets/img/products/product-1-min.jpg"
-                            alt="img-blur-shadow" class="img-fluid shadow border-radius-lg">
+                        <img src="{{ vich_uploader_asset(room, 'photoFile') }}"
+                             alt="{{ room.name }}"
+                             class="img-fluid shadow border-radius-lg"
+                        >
                     </a>
                     <div class="colored-shadow"
                          style="background-image: url(&quot;https://demos.creative-tim.com/test/material-dashboard-pro/assets/img/products/product-1-min.jpg&quot;);"></div>
