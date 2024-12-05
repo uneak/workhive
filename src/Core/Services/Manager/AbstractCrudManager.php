@@ -47,14 +47,19 @@
         }
 
         /**
-         * Get all entities.
+         * Find entities with filters, ordering and pagination
+         *
+         * @param array $filters Filter criteria
+         * @param array $orderBy Order criteria
+         * @param int|null $limit Max results
+         * @param int|null $offset Pagination offset
          *
          * @return array<ObjectModel>
          * @psalm-return list<T> The entities.
          */
-        public function all(): array
+        public function all(array $filters = [], array $orderBy = [], ?int $limit = null, ?int $offset = null): array
         {
-            return $this->repository->all();
+            return $this->repository->all($filters, $orderBy, $limit, $offset);
         }
 
         /**
@@ -72,5 +77,7 @@
         {
             $this->repository->remove($entity, $flush);
         }
+
+
 
     }

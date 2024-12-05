@@ -8,8 +8,7 @@
     /**
      * Repository class for the Room entity.
      *
-     * @template T of RoomModel
-     * @template-extends AbstractCrudManager<T>
+     * @template-extends AbstractCrudManager<RoomModel>
      */
     class RoomManager extends AbstractCrudManager
     {

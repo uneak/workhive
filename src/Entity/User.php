@@ -10,6 +10,8 @@
     use Doctrine\Common\Collections\ArrayCollection;
     use Doctrine\Common\Collections\Collection;
     use Doctrine\ORM\Mapping as ORM;
+    use Nelmio\ApiDocBundle\Attribute\Model;
+    use OpenApi\Attributes as OA;
     use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
     use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
     use Symfony\Component\Security\Core\User\UserInterface;
@@ -62,6 +64,7 @@
          * @var UserRole|null
          */
         #[ORM\Column(enumType: UserRole::class)]
+        #[OA\Property(ref: new Model(type: UserRole::class))]
         private ?UserRole $userRole;
 
         /**
@@ -94,6 +97,7 @@
          * @var Status|null
          */
         #[ORM\Column(enumType: Status::class)]
+        #[OA\Property(ref: new Model(type: Status::class))]
         private ?Status $status = null;
 
         /**

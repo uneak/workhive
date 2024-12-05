@@ -7,6 +7,9 @@
     use App\Core\Model\RoomRoleRateModel;
     use App\Repository\RoomRoleRateRepository;
     use Doctrine\ORM\Mapping as ORM;
+    use Nelmio\ApiDocBundle\Attribute\Model;
+    use OpenApi\Attributes as OA;
+
 
     /**
      * Represents the hourly rate for a room based on the user's role.
@@ -40,6 +43,7 @@
          * @var UserRole
          */
         #[ORM\Column(type: 'string', enumType: UserRole::class)]
+        #[OA\Property(ref: new Model(type: UserRole::class))]
         private UserRole $userRole;
 
         /**

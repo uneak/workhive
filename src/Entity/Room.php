@@ -14,10 +14,17 @@
     use Doctrine\ORM\Mapping as ORM;
     use Symfony\Component\Serializer\Attribute\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
+    use Nelmio\ApiDocBundle\Attribute\Model;
+    use OpenApi\Attributes as OA;
 
     /**
      * Represents a room that can be reserved.
      */
+    #[OA\Schema(
+        title: 'title Schema Attribute',
+        description: 'description Schema Attribute',
+        type: 'object'
+    )]
     #[ORM\Entity(repositoryClass: RoomRepository::class)]
     #[ORM\Table(name: 'rooms')]
     class Room implements RoomModel
@@ -89,6 +96,7 @@
         #[ORM\Column(enumType: Status::class)]
         #[Groups(['room:read', 'room:write'])]
         #[Assert\NotBlank]
+        #[OA\Property(ref: new Model(type: Status::class))]
         private ?Status $status;
 
         /**

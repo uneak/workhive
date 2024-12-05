@@ -9,6 +9,9 @@
     use App\Repository\ReservationRepository;
     use DateTime;
     use Doctrine\ORM\Mapping as ORM;
+    use Nelmio\ApiDocBundle\Attribute\Model;
+    use OpenApi\Attributes as OA;
+
 
     /**
      * Represents a reservation for a room by a user.
@@ -67,6 +70,7 @@
          * @var ReservationStatus|null
          */
         #[ORM\Column(enumType: ReservationStatus::class)]
+        #[OA\Property(ref: new Model(type: ReservationStatus::class))]
         private ?ReservationStatus $status;
 
         /**

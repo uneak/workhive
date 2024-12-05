@@ -1,6 +1,13 @@
 <?php
 
     namespace App\Core\Enum;
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        description: 'User role in the system',
+        type: 'string',
+        enum: ['member', 'user', 'admin']
+    )]
     enum UserRole: string
     {
         case ROLE_MEMBER = 'member';
