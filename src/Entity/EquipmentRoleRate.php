@@ -30,9 +30,6 @@
     #[ORM\Table(name: 'equipment_role_rate')]
     class EquipmentRoleRate implements EquipmentRoleRateModel
     {
-        public const READ_GROUPS = ['read', EquipmentRoleRateModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', EquipmentRoleRateModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the equipment role rate.
          *
@@ -47,7 +44,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(EquipmentRoleRateModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -61,7 +58,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Equipment::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(EquipmentRoleRateModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Equipment is required')]
         private EquipmentModel $equipment;
 
@@ -76,7 +73,7 @@
             description: 'The role of the user for which this rate applies'
         )]
         #[ORM\Column(type: 'string', enumType: UserRole::class)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(EquipmentRoleRateModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'User role is required')]
         private UserRole $userRole;
 
@@ -94,7 +91,7 @@
             example: 25.50
         )]
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(EquipmentRoleRateModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Hourly rate is required')]
         #[Assert\GreaterThanOrEqual(
             value: 0,
@@ -147,7 +144,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(EquipmentRoleRateModel::READ_GROUPS)]
         public function getEquipmentId(): ?int
         {
             return $this->equipment?->getId();

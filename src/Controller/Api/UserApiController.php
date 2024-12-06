@@ -3,7 +3,7 @@
     namespace App\Controller\Api;
 
     use App\Core\Enum\Status;
-    use App\Core\Enum\UserRole;
+    use App\Core\Model\ObjectModel;
     use App\Core\Services\Manager\UserManager;
     use App\Entity\User;
     use Nelmio\ApiDocBundle\Attribute\Model;
@@ -120,7 +120,7 @@
                     description: "Returns a list of users matching the specified criteria.",
                     content: new OA\JsonContent(
                         type: 'array',
-                        items: new OA\Items(ref: new Model(type: User::class, groups: ['user:read']))
+                        items: new OA\Items(ref: new Model(type: User::class, groups: [ObjectModel::READ_PREFIX]))
                     )
                 ),
                 new OA\Response(
@@ -136,7 +136,7 @@
         #[Route('/', name: 'list', methods: ['GET'])]
         public function index(Request $request): JsonResponse
         {
-            return $this->listEntities($request, 'user:read');
+            return $this->listEntities($request, ObjectModel::READ_PREFIX);
         }
 
         #[OA\Post(
@@ -147,7 +147,7 @@
             requestBody: new OA\RequestBody(
                 description: "Details of the user to be created",
                 required: true,
-                content: new OA\JsonContent(ref: new Model(type: User::class, groups: ['user:write']))
+                content: new OA\JsonContent(ref: new Model(type: User::class, groups: [ObjectModel::CREATE_PREFIX]))
             ),
             tags: ['users'],
             responses: [
@@ -215,7 +215,7 @@
                 new OA\Response(
                     response: 200,
                     description: "Returns the requested user.",
-                    content: new OA\JsonContent(ref: new Model(type: User::class, groups: ['user:read']))
+                    content: new OA\JsonContent(ref: new Model(type: User::class, groups: [ObjectModel::READ_PREFIX]))
                 ),
                 new OA\Response(
                     response: 404,
@@ -239,7 +239,7 @@
         #[Route('/{id}', name: 'show', methods: ['GET'])]
         public function show(int $id): JsonResponse
         {
-            return $this->showEntity($id, 'user:read');
+            return $this->showEntity($id, ObjectModel::READ_PREFIX);
         }
 
         #[OA\Put(
@@ -250,7 +250,7 @@
             requestBody: new OA\RequestBody(
                 description: "Updated user details. Only provided fields will be modified.",
                 required: true,
-                content: new OA\JsonContent(ref: new Model(type: User::class, groups: ['user:write']))
+                content: new OA\JsonContent(ref: new Model(type: User::class, groups: [ObjectModel::UPDATE_PREFIX]))
             ),
             tags: ['users'],
             parameters: [
@@ -373,10 +373,9 @@
          */
         public function processUserData(array $data, User $user): array
         {
-            if (isset($data['password']) && $data['password']) {
-                $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
-                $user->setPassword($hashedPassword);
-                unset($data['password']); // Remove password from data to prevent double-setting
+            if (isset($data['plainPassword']) && $data['plainPassword']) {
+                $user->setPassword($this->passwordHasher->hashPassword($user, $data['plainPassword']));
+                unset($data['plainPassword']); // Remove password from data to prevent double-setting
             }
 
             return $data;

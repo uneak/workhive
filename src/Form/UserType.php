@@ -62,7 +62,7 @@
                         'placeholder' => 'Enter email address',
                     ],
                 ])
-                ->add('password', PasswordType::class, [
+                ->add('plainPassword', PasswordType::class, [
                     'label' => 'Password',
                     'attr'  => [
                         'placeholder' => 'Enter password',

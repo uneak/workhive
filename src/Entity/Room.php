@@ -43,16 +43,13 @@
     #[Vich\Uploadable]
     class Room implements RoomModel
     {
-        public const READ_GROUPS = ['read', RoomModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', RoomModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the room.
          */
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -60,7 +57,7 @@
          * Must be between 2 and 100 characters.
          */
         #[ORM\Column(type: 'string', length: 100)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Room name is required')]
         #[Assert\Length(
             min: 2,
@@ -75,7 +72,7 @@
          * Must be between 1 and 100 people.
          */
         #[ORM\Column(type: 'integer')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Capacity is required')]
         #[Assert\Type(
             type: 'integer',
@@ -93,7 +90,7 @@
          * Must be between 0.1 and 50.0 meters.
          */
         #[ORM\Column(type: 'float')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Width is required')]
         #[Assert\Type(
             type: 'float',
@@ -111,7 +108,7 @@
          * Must be between 0.1 and 50.0 meters.
          */
         #[ORM\Column(type: 'float')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Length is required')]
         #[Assert\Type(
             type: 'float',
@@ -133,7 +130,7 @@
             description: 'Status of the room'
         )]
         #[ORM\Column(enumType: Status::class)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomModel::READ_GROUPS)]
         #[Assert\NotNull(message: 'Status is required')]
         private ?Status $status = null;
 
@@ -142,7 +139,7 @@
          * Optional, limited to 1000 characters.
          */
         #[ORM\Column(type: 'text', nullable: true)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomModel::RW_GROUPS)]
         #[Assert\Length(
             max: 1000,
             maxMessage: 'Description cannot be longer than {{ limit }} characters'
@@ -153,7 +150,7 @@
          * The photo URL of the room (optional).
          */
         #[ORM\Column(type: 'string', length: 255, nullable: true)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomModel::RW_GROUPS)]
         private ?string $photo;
 
         #[Vich\UploadableField(mapping: 'rooms', fileNameProperty: 'photo')]
@@ -163,14 +160,14 @@
          * The timestamp when the room was created.
          */
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomModel::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
          * The timestamp when the room was last updated.
          */
         #[ORM\Column(type: 'datetime', nullable: true)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomModel::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**

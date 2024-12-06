@@ -34,9 +34,6 @@
     #[ORM\Table(name: 'week_schedules')]
     class WeekSchedules implements WeekSchedulesModel
     {
-        public const READ_GROUPS = ['read', WeekSchedulesModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', WeekSchedulesModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the weekly schedule.
          *
@@ -51,7 +48,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(WeekSchedulesModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -67,7 +64,7 @@
             example: '09:00:00'
         )]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(WeekSchedulesModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Start time is required')]
         private ?DateTimeInterface $startedAt = null;
 
@@ -84,7 +81,7 @@
             example: '17:00:00'
         )]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(WeekSchedulesModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'End time is required')]
         private ?DateTimeInterface $endedAt = null;
 
@@ -102,7 +99,7 @@
             example: 1
         )]
         #[ORM\Column(type: Types::SMALLINT)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(WeekSchedulesModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Day of week is required')]
         #[Assert\Range(
             notInRangeMessage: 'Day of week must be between {{ min }} and {{ max }}',
@@ -122,7 +119,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'weekSchedules')]
         #[ORM\JoinColumn(nullable: false)]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(WeekSchedulesModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Room is required')]
         private ?RoomModel $room = null;
 
@@ -243,7 +240,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(WeekSchedulesModel::READ_GROUPS)]
         public function getRoomId(): ?int
         {
             return $this->room?->getId();

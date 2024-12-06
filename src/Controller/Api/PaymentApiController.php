@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Core\Model\ObjectModel;
 use App\Core\Services\Manager\PaymentManager;
 use App\Entity\Payment;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -116,7 +117,7 @@ class PaymentApiController extends AbstractApiController
                 description: "Returns a list of payments matching the specified criteria.",
                 content: new OA\JsonContent(
                     type: 'array',
-                    items: new OA\Items(ref: new Model(type: Payment::class, groups: ['payment:read']))
+                    items: new OA\Items(ref: new Model(type: Payment::class, groups: [ObjectModel::READ_PREFIX]))
                 )
             ),
             new OA\Response(
@@ -132,7 +133,7 @@ class PaymentApiController extends AbstractApiController
     #[Route('/', name: 'list', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
-        return $this->listEntities($request, 'payment:read');
+        return $this->listEntities($request, ObjectModel::READ_PREFIX);
     }
 
     #[OA\Post(
@@ -143,7 +144,7 @@ class PaymentApiController extends AbstractApiController
         requestBody: new OA\RequestBody(
             description: "Details of the payment to be created",
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: Payment::class, groups: ['payment:write']))
+            content: new OA\JsonContent(ref: new Model(type: Payment::class, groups: [ObjectModel::CREATE_PREFIX]))
         ),
         tags: ['payments'],
         responses: [
@@ -153,7 +154,7 @@ class PaymentApiController extends AbstractApiController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Payment created successfully'),
-                        new OA\Property(property: 'payment', ref: new Model(type: Payment::class, groups: ['payment:read']))
+                        new OA\Property(property: 'payment', ref: new Model(type: Payment::class, groups: [ObjectModel::READ_PREFIX]))
                     ]
                 )
             ),
@@ -210,7 +211,7 @@ class PaymentApiController extends AbstractApiController
             new OA\Response(
                 response: 200,
                 description: 'Returns the requested payment details',
-                content: new OA\JsonContent(ref: new Model(type: Payment::class, groups: ['payment:read']))
+                content: new OA\JsonContent(ref: new Model(type: Payment::class, groups: [ObjectModel::READ_PREFIX]))
             ),
             new OA\Response(
                 response: 404,
@@ -226,7 +227,7 @@ class PaymentApiController extends AbstractApiController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        return $this->showEntity($id, 'payment:read');
+        return $this->showEntity($id, ObjectModel::READ_PREFIX);
     }
 
     #[OA\Put(
@@ -237,7 +238,7 @@ class PaymentApiController extends AbstractApiController
         requestBody: new OA\RequestBody(
             description: 'Updated payment details',
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: Payment::class, groups: ['payment:write']))
+            content: new OA\JsonContent(ref: new Model(type: Payment::class, groups: [ObjectModel::UPDATE_PREFIX]))
         ),
         tags: ['payments'],
         parameters: [
@@ -256,7 +257,7 @@ class PaymentApiController extends AbstractApiController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Payment updated successfully'),
-                        new OA\Property(property: 'payment', ref: new Model(type: Payment::class, groups: ['payment:read']))
+                        new OA\Property(property: 'payment', ref: new Model(type: Payment::class, groups: [ObjectModel::READ_PREFIX]))
                     ]
                 )
             ),
@@ -272,9 +273,9 @@ class PaymentApiController extends AbstractApiController
         ]
     )]
     #[Route('/{id}', name: 'edit', methods: ['PUT'])]
-    public function edit(Request $request, int $id): JsonResponse
+    public function edit(int $id, Request $request): JsonResponse
     {
-        return $this->updateEntity($request, $id);
+        return $this->updateEntity($request, $id, ObjectModel::UPDATE_PREFIX);
     }
 
     #[OA\Delete(

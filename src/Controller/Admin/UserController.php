@@ -45,9 +45,9 @@
             );
 
             if ($isSubmitted) {
-                $plainPassword = $data->getPassword();
-                $hashedPassword = $passwordHasher->hashPassword($data, $plainPassword);
-                $data->setPassword($hashedPassword);
+                if ($data->getPlainPassword()) {
+                    $data->setPassword($passwordHasher->hashPassword($data, $data->getPlainPassword()));
+                }
 
                 $manager->save($data, true);
 
@@ -87,9 +87,9 @@
             );
 
             if ($isSubmitted) {
-                $plainPassword = $data->getPassword();
-                $hashedPassword = $passwordHasher->hashPassword($data, $plainPassword);
-                $data->setPassword($hashedPassword);
+                if ($data->getPlainPassword()) {
+                    $data->setPassword($passwordHasher->hashPassword($data, $data->getPlainPassword()));
+                }
 
                 $manager->save($data, true);
 

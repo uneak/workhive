@@ -35,9 +35,6 @@
     #[ORM\Table(name: 'payment_methods')]
     class PaymentMethod implements PaymentMethodModel
     {
-        public const READ_GROUPS = ['read', PaymentMethodModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', PaymentMethodModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the payment method.
          * Auto-generated primary key for the payment method entity.
@@ -53,7 +50,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentMethodModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -69,7 +66,7 @@
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
         #[Assert\NotNull(message: 'User is required')]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(PaymentMethodModel::WRITE_GROUPS)]
         private UserModel $user;
 
         /**
@@ -86,7 +83,7 @@
             example: 'Personal Visa Card'
         )]
         #[ORM\Column(type: 'string', length: 100)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(PaymentMethodModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Payment method label is required')]
         #[Assert\Length(
             max: 100,
@@ -109,7 +106,7 @@
             example: 'credit_card'
         )]
         #[ORM\Column(type: 'string', length: 50)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(PaymentMethodModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Payment method type is required')]
         #[Assert\Length(
             max: 50,
@@ -131,7 +128,7 @@
             example: ['last4' => '1234', 'brand' => 'visa']
         )]
         #[ORM\Column(type: 'json')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(PaymentMethodModel::RW_GROUPS)]
         private array $data;
 
         /**
@@ -147,7 +144,7 @@
             example: '2024-01-01T12:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentMethodModel::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -160,11 +157,11 @@
             description: 'The timestamp when the payment method was last updated',
             type: 'string',
             format: 'date-time',
-            nullable: true,
-            example: '2024-01-02T15:30:00+00:00'
+            example: '2024-01-02T15:30:00+00:00',
+            nullable: true
         )]
         #[ORM\Column(type: 'datetime', nullable: true)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentMethodModel::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**
@@ -327,7 +324,7 @@
             return $this;
         }
 
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentMethodModel::READ_GROUPS)]
         public function getUserId(): ?int
         {
             return $this->user->getId();

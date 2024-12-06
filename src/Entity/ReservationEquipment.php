@@ -31,9 +31,6 @@
     #[ORM\Table(name: 'reservation_equipment')]
     class ReservationEquipment implements ReservationEquipmentModel
     {
-        public const READ_GROUPS = ['read', ReservationEquipmentModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', ReservationEquipmentModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the reservation equipment.
          *
@@ -48,7 +45,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationEquipmentModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -62,7 +59,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Reservation::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(ReservationEquipmentModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Reservation is required')]
         private ?ReservationModel $reservation = null;
 
@@ -77,7 +74,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Equipment::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(ReservationEquipmentModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Equipment is required')]
         private ?EquipmentModel $equipment = null;
 
@@ -94,7 +91,7 @@
             example: 2
         )]
         #[ORM\Column(type: 'integer')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(ReservationEquipmentModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Quantity is required')]
         #[Assert\GreaterThan(
             value: 0,
@@ -115,7 +112,7 @@
             example: '2024-01-01T12:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationEquipmentModel::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -132,7 +129,7 @@
             nullable: true
         )]
         #[ORM\Column(type: 'datetime', nullable: true)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationEquipmentModel::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**
@@ -248,7 +245,7 @@
          * @param \DateTime|null $updatedAt
          * @return $this
          */
-        public function setUpdatedAt(?DateTime $updatedAt): self
+        public function setUpdatedAt(?DateTime $updatedAt): static
         {
             $this->updatedAt = $updatedAt;
 
@@ -260,7 +257,7 @@
          *
          * @return int|null
          */
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationEquipmentModel::READ_GROUPS)]
         public function getReservationId(): ?int
         {
             return $this->reservation?->getId();
@@ -271,7 +268,7 @@
          *
          * @return int|null
          */
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationEquipmentModel::READ_GROUPS)]
         public function getEquipmentId(): ?int
         {
             return $this->equipment?->getId();

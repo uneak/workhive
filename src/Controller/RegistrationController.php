@@ -33,11 +33,11 @@
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                /** @var string $plainPassword */
-                $plainPassword = $form->get('plainPassword')->getData();
 
                 // encode the plain password
-                $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+                if ($user->getPlainPassword()) {
+                    $user->setPassword($userPasswordHasher->hashPassword($user, $user->getPlainPassword()));
+                }
 
                 $entityManager->persist($user);
                 $entityManager->flush();
@@ -72,13 +72,13 @@
                 $user = $this->getUser();
                 $this->emailVerifier->handleEmailConfirmation($request, $user);
             } catch (VerifyEmailExceptionInterface $exception) {
-//                $this->addFlash('verify_email_error', $exception->getReason());
+                //                $this->addFlash('verify_email_error', $exception->getReason());
 
                 return $this->redirectToRoute('app_register');
             }
 
             // @TODO Change the redirect on success and handle or remove the flash message in your templates
-//            $this->addFlash('success', 'Your email address has been verified.');
+            //            $this->addFlash('success', 'Your email address has been verified.');
 
             return $this->redirectToRoute('app_login');
         }

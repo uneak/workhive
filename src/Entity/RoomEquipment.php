@@ -31,9 +31,6 @@
     #[ORM\Table(name: 'room_equipment')]
     class RoomEquipment implements RoomEquipmentModel
     {
-        public const READ_GROUPS = ['read', RoomEquipmentModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', RoomEquipmentModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the room-equipment association.
          */
@@ -46,7 +43,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomEquipmentModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -84,7 +81,7 @@
             example: 5
         )]
         #[ORM\Column(type: 'integer')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomEquipmentModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Quantity is required')]
         #[Assert\GreaterThan(value: 0, message: 'Quantity must be greater than zero')]
         private int $quantity;
@@ -100,7 +97,7 @@
             example: '2024-01-01T12:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomEquipmentModel::READ_GROUPS)]
         private DateTime $assignedAt;
 
         public function __construct()
@@ -124,7 +121,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomEquipmentModel::READ_GROUPS)]
         public function getRoomId(): ?int
         {
             return $this->room?->getId();
@@ -148,7 +145,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomEquipmentModel::READ_GROUPS)]
         public function getEquipmentId(): ?int
         {
             return $this->equipment?->getId();

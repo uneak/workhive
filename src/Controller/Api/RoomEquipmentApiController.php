@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Core\Model\ObjectModel;
 use App\Core\Services\Manager\RoomEquipmentManager;
 use App\Entity\RoomEquipment;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -117,7 +118,7 @@ class RoomEquipmentApiController extends AbstractApiController
                 description: "Returns a list of room equipment matching the specified criteria.",
                 content: new OA\JsonContent(
                     type: 'array',
-                    items: new OA\Items(ref: new Model(type: RoomEquipment::class, groups: ['room_equipment:read']))
+                    items: new OA\Items(ref: new Model(type: RoomEquipment::class, groups: [ObjectModel::READ_PREFIX]))
                 )
             ),
             new OA\Response(
@@ -133,7 +134,7 @@ class RoomEquipmentApiController extends AbstractApiController
     #[Route('/', name: 'list', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
-        return $this->listEntities($request, 'room_equipment:read');
+        return $this->listEntities($request, ObjectModel::READ_PREFIX);
     }
 
     #[OA\Post(
@@ -144,7 +145,7 @@ class RoomEquipmentApiController extends AbstractApiController
         requestBody: new OA\RequestBody(
             description: "Details of the room equipment to be created",
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: RoomEquipment::class, groups: ['room_equipment:write']))
+            content: new OA\JsonContent(ref: new Model(type: RoomEquipment::class, groups: [ObjectModel::CREATE_PREFIX]))
         ),
         tags: ['room-equipment'],
         responses: [
@@ -154,7 +155,7 @@ class RoomEquipmentApiController extends AbstractApiController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Room equipment created successfully'),
-                        new OA\Property(property: 'room_equipment', ref: new Model(type: RoomEquipment::class, groups: ['room_equipment:read']))
+                        new OA\Property(property: 'room_equipment', ref: new Model(type: RoomEquipment::class, groups: [ObjectModel::READ_PREFIX]))
                     ]
                 )
             ),
@@ -211,7 +212,7 @@ class RoomEquipmentApiController extends AbstractApiController
             new OA\Response(
                 response: 200,
                 description: 'Returns the requested room equipment details',
-                content: new OA\JsonContent(ref: new Model(type: RoomEquipment::class, groups: ['room_equipment:read']))
+                content: new OA\JsonContent(ref: new Model(type: RoomEquipment::class, groups: [ObjectModel::READ_PREFIX]))
             ),
             new OA\Response(
                 response: 404,
@@ -227,7 +228,7 @@ class RoomEquipmentApiController extends AbstractApiController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        return $this->showEntity($id, 'room_equipment:read');
+        return $this->showEntity($id, ObjectModel::READ_PREFIX);
     }
 
     #[OA\Put(
@@ -238,7 +239,7 @@ class RoomEquipmentApiController extends AbstractApiController
         requestBody: new OA\RequestBody(
             description: 'Updated room equipment details',
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: RoomEquipment::class, groups: ['room_equipment:write']))
+            content: new OA\JsonContent(ref: new Model(type: RoomEquipment::class, groups: [ObjectModel::UPDATE_PREFIX]))
         ),
         tags: ['room-equipment'],
         parameters: [
@@ -257,7 +258,7 @@ class RoomEquipmentApiController extends AbstractApiController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Room equipment updated successfully'),
-                        new OA\Property(property: 'room_equipment', ref: new Model(type: RoomEquipment::class, groups: ['room_equipment:read']))
+                        new OA\Property(property: 'room_equipment', ref: new Model(type: RoomEquipment::class, groups: [ObjectModel::READ_PREFIX]))
                     ]
                 )
             ),
@@ -273,9 +274,9 @@ class RoomEquipmentApiController extends AbstractApiController
         ]
     )]
     #[Route('/{id}', name: 'edit', methods: ['PUT'])]
-    public function edit(Request $request, int $id): JsonResponse
+    public function edit(int $id, Request $request): JsonResponse
     {
-        return $this->updateEntity($request, $id);
+        return $this->updateEntity($request, $id, ObjectModel::UPDATE_PREFIX);
     }
 
     #[OA\Delete(

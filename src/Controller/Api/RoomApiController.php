@@ -3,6 +3,7 @@
     namespace App\Controller\Api;
 
     use App\Core\Enum\Status;
+    use App\Core\Model\ObjectModel;
     use App\Core\Services\Manager\RoomManager;
     use App\Entity\Room;
     use Nelmio\ApiDocBundle\Attribute\Model;
@@ -117,7 +118,7 @@
                     description: "Returns a list of rooms matching the specified criteria.",
                     content: new OA\JsonContent(
                         type: 'array',
-                        items: new OA\Items(ref: new Model(type: Room::class, groups: ['room:read']))
+                        items: new OA\Items(ref: new Model(type: Room::class, groups: [ObjectModel::READ_PREFIX]))
                     )
                 ),
                 new OA\Response(
@@ -133,7 +134,7 @@
         #[Route('/', name: 'list', methods: ['GET'])]
         public function index(Request $request): JsonResponse
         {
-            return $this->listEntities($request, 'room:read');
+            return $this->listEntities($request, ObjectModel::READ_PREFIX);
         }
 
         #[OA\Post(
@@ -144,7 +145,7 @@
             requestBody: new OA\RequestBody(
                 description: "Details of the room to be created",
                 required: true,
-                content: new OA\JsonContent(ref: new Model(type: Room::class, groups: ['room:write']))
+                content: new OA\JsonContent(ref: new Model(type: Room::class, groups: [ObjectModel::CREATE_PREFIX]))
             ),
             tags: ['rooms'],
             responses: [
@@ -154,7 +155,7 @@
                     content: new OA\JsonContent(
                         properties: [
                             new OA\Property(property: 'message', type: 'string', example: 'Room created successfully'),
-                            new OA\Property(property: 'room', ref: new Model(type: Room::class, groups: ['room:read']))
+                            new OA\Property(property: 'room', ref: new Model(type: Room::class, groups: [ObjectModel::READ_PREFIX]))
                         ]
                     )
                 ),
@@ -211,7 +212,7 @@
                 new OA\Response(
                     response: 200,
                     description: "Returns the requested room.",
-                    content: new OA\JsonContent(ref: new Model(type: Room::class, groups: ['room:read']))
+                    content: new OA\JsonContent(ref: new Model(type: Room::class, groups: [ObjectModel::READ_PREFIX]))
                 ),
                 new OA\Response(
                     response: 404,
@@ -235,18 +236,18 @@
         #[Route('/{id}', name: 'show', methods: ['GET'])]
         public function show(int $id): JsonResponse
         {
-            return $this->showEntity($id, 'room:read');
+            return $this->showEntity($id, ObjectModel::READ_PREFIX);
         }
 
         #[OA\Put(
             operationId: 'updateRoom',
             description: "Updates an existing room with the provided details. Partial updates are supported - only provided fields will be modified.",
-            summary: 'Update room details',
+            summary: 'Update a room',
             security: [['Bearer' => []]],
             requestBody: new OA\RequestBody(
                 description: "Updated room details. Only provided fields will be modified.",
                 required: true,
-                content: new OA\JsonContent(ref: new Model(type: Room::class, groups: ['room:write']))
+                content: new OA\JsonContent(ref: new Model(type: Room::class, groups: [ObjectModel::UPDATE_PREFIX]))
             ),
             tags: ['rooms'],
             parameters: [
@@ -306,9 +307,9 @@
             ]
         )]
         #[Route('/{id}', name: 'edit', methods: ['PUT'])]
-        public function edit(Request $request, int $id): JsonResponse
+        public function edit(int $id, Request $request): JsonResponse
         {
-            return $this->updateEntity($request, $id);
+            return $this->updateEntity($request, $id, ObjectModel::UPDATE_PREFIX);
         }
 
         #[OA\Delete(

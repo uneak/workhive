@@ -35,9 +35,6 @@
     #[ORM\Table(name: 'payments')]
     class Payment implements PaymentModel
     {
-        public const READ_GROUPS = ['read', PaymentModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', PaymentModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the payment.
          *
@@ -52,7 +49,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -66,7 +63,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'payments')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(PaymentModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Reservation is required')]
         private ?ReservationModel $reservation = null;
 
@@ -81,7 +78,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: PaymentMethod::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(PaymentModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Payment method is required')]
         private ?PaymentMethodModel $paymentMethod = null;
 
@@ -99,7 +96,7 @@
             example: 99.99
         )]
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(PaymentModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Amount is required')]
         #[Assert\Positive(message: 'Amount must be positive')]
         private float $amount;
@@ -114,7 +111,7 @@
             description: 'The current status of the payment'
         )]
         #[ORM\Column(type: 'string', enumType: PaymentStatus::class)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentModel::READ_GROUPS)]
         #[Assert\NotNull(message: 'Payment status is required')]
         private PaymentStatus $status = PaymentStatus::PENDING;
 
@@ -131,7 +128,7 @@
             example: '2024-01-01T12:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentModel::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -148,7 +145,7 @@
             nullable: true
         )]
         #[ORM\Column(type: 'datetime', nullable: true)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentModel::READ_GROUPS)]
         private ?DateTime $updatedAt = null;
 
         /**
@@ -204,7 +201,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentModel::READ_GROUPS)]
         public function getReservationId(): ?int
         {
             return $this->reservation?->getId();
@@ -245,7 +242,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(PaymentModel::READ_GROUPS)]
         public function getPaymentMethodId(): ?int
         {
             return $this->paymentMethod?->getId();

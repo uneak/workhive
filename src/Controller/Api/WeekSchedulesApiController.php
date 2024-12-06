@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Core\Model\ObjectModel;
 use App\Core\Services\Manager\WeekSchedulesManager;
 use App\Entity\WeekSchedules;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -116,7 +117,7 @@ class WeekSchedulesApiController extends AbstractApiController
                 description: "Returns a list of week schedules matching the specified criteria.",
                 content: new OA\JsonContent(
                     type: 'array',
-                    items: new OA\Items(ref: new Model(type: WeekSchedules::class, groups: ['week_schedules:read']))
+                    items: new OA\Items(ref: new Model(type: WeekSchedules::class, groups: [ObjectModel::READ_PREFIX]))
                 )
             ),
             new OA\Response(
@@ -132,7 +133,7 @@ class WeekSchedulesApiController extends AbstractApiController
     #[Route('/', name: 'list', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
-        return $this->listEntities($request, 'week_schedules:read');
+        return $this->listEntities($request, ObjectModel::READ_PREFIX);
     }
 
     #[OA\Post(
@@ -143,7 +144,7 @@ class WeekSchedulesApiController extends AbstractApiController
         requestBody: new OA\RequestBody(
             description: "Details of the week schedule to be created",
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: WeekSchedules::class, groups: ['week_schedules:write']))
+            content: new OA\JsonContent(ref: new Model(type: WeekSchedules::class, groups: [ObjectModel::CREATE_PREFIX]))
         ),
         tags: ['week-schedules'],
         responses: [
@@ -153,7 +154,7 @@ class WeekSchedulesApiController extends AbstractApiController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Week schedule created successfully'),
-                        new OA\Property(property: 'week_schedule', ref: new Model(type: WeekSchedules::class, groups: ['week_schedules:read']))
+                        new OA\Property(property: 'week_schedule', ref: new Model(type: WeekSchedules::class, groups: [ObjectModel::READ_PREFIX]))
                     ]
                 )
             ),
@@ -210,7 +211,7 @@ class WeekSchedulesApiController extends AbstractApiController
             new OA\Response(
                 response: 200,
                 description: 'Returns the requested week schedule details',
-                content: new OA\JsonContent(ref: new Model(type: WeekSchedules::class, groups: ['week_schedules:read']))
+                content: new OA\JsonContent(ref: new Model(type: WeekSchedules::class, groups: [ObjectModel::READ_PREFIX]))
             ),
             new OA\Response(
                 response: 404,
@@ -226,7 +227,7 @@ class WeekSchedulesApiController extends AbstractApiController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        return $this->showEntity($id, 'week_schedules:read');
+        return $this->showEntity($id, ObjectModel::READ_PREFIX);
     }
 
     #[OA\Put(
@@ -237,7 +238,7 @@ class WeekSchedulesApiController extends AbstractApiController
         requestBody: new OA\RequestBody(
             description: 'Updated week schedule details',
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: WeekSchedules::class, groups: ['week_schedules:write']))
+            content: new OA\JsonContent(ref: new Model(type: WeekSchedules::class, groups: [ObjectModel::UPDATE_PREFIX]))
         ),
         tags: ['week-schedules'],
         parameters: [
@@ -256,7 +257,7 @@ class WeekSchedulesApiController extends AbstractApiController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Week schedule updated successfully'),
-                        new OA\Property(property: 'week_schedule', ref: new Model(type: WeekSchedules::class, groups: ['week_schedules:read']))
+                        new OA\Property(property: 'week_schedule', ref: new Model(type: WeekSchedules::class, groups: [ObjectModel::READ_PREFIX]))
                     ]
                 )
             ),
@@ -272,9 +273,9 @@ class WeekSchedulesApiController extends AbstractApiController
         ]
     )]
     #[Route('/{id}', name: 'edit', methods: ['PUT'])]
-    public function edit(Request $request, int $id): JsonResponse
+    public function edit(int $id, Request $request): JsonResponse
     {
-        return $this->updateEntity($request, $id);
+        return $this->updateEntity($request, $id, ObjectModel::UPDATE_PREFIX);
     }
 
     #[OA\Delete(

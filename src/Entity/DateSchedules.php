@@ -31,9 +31,6 @@
     #[ORM\Table(name: 'date_schedules')]
     class DateSchedules implements DateSchedulesModel
     {
-        public const READ_GROUPS = ['read', DateSchedulesModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', DateSchedulesModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the schedule.
          */
@@ -41,7 +38,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(DateSchedulesModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -49,7 +46,7 @@
          */
         #[OA\Property(description: 'An optional name or label for the schedule', type: 'string', example: 'Holiday Schedule', nullable: true)]
         #[ORM\Column(length: 255, nullable: true)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(DateSchedulesModel::RW_GROUPS)]
         private ?string $name = null;
 
         /**
@@ -57,7 +54,7 @@
          */
         #[OA\Property(description: 'The date of the schedule', type: 'string', format: 'date', example: '2024-01-01')]
         #[ORM\Column(type: Types::DATE_MUTABLE)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(DateSchedulesModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Date is required')]
         private ?DateTimeInterface $date = null;
 
@@ -66,7 +63,7 @@
          */
         #[OA\Property(description: 'The starting time of the schedule', type: 'string', format: 'time', example: '09:00:00')]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(DateSchedulesModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Opening time is required')]
         private ?DateTimeInterface $startedAt = null;
 
@@ -75,7 +72,7 @@
          */
         #[OA\Property(description: 'The ending time of the schedule', type: 'string', format: 'time', example: '17:00:00')]
         #[ORM\Column(type: Types::TIME_MUTABLE)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(DateSchedulesModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Closing time is required')]
         private ?DateTimeInterface $endedAt = null;
 
@@ -84,7 +81,7 @@
          */
         #[OA\Property(description: 'Indicates whether the schedule is open during the specified time', type: 'boolean', example: true)]
         #[ORM\Column]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(DateSchedulesModel::RW_GROUPS)]
         private ?bool $isOpen = null;
 
         /**
@@ -93,7 +90,7 @@
         #[OA\Property(ref: new Model(type: Room::class), description: 'The room associated with this schedule')]
         #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'dateSchedules')]
         #[ORM\JoinColumn(nullable: false)]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(DateSchedulesModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Room is required')]
         private ?RoomModel $room = null;
 
@@ -256,7 +253,7 @@
          *
          * @return int|null
          */
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(DateSchedulesModel::READ_GROUPS)]
         public function getRoomId(): ?int
         {
             return $this->room?->getId();

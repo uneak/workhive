@@ -36,9 +36,6 @@
     #[ORM\Table(name: 'reservations')]
     class Reservation implements ReservationModel
     {
-        public const READ_GROUPS = ['read', ReservationModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', ReservationModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the reservation.
          */
@@ -51,7 +48,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -64,7 +61,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false)]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(ReservationModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Room is required')]
         private ?RoomModel $room;
 
@@ -78,7 +75,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: User::class)]
         #[ORM\JoinColumn(nullable: false)]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(ReservationModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'User is required')]
         private ?UserModel $user;
 
@@ -94,7 +91,7 @@
             example: '2024-01-01T09:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(ReservationModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Start date is required')]
         #[Assert\Type(type: DateTime::class)]
         #[Assert\GreaterThanOrEqual(
@@ -115,7 +112,7 @@
             example: '2024-01-01T17:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(ReservationModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'End date is required')]
         #[Assert\Type(type: DateTime::class)]
         #[Assert\Expression(
@@ -133,7 +130,7 @@
             description: 'The current status of the reservation'
         )]
         #[ORM\Column(enumType: ReservationStatus::class)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationModel::READ_GROUPS)]
         #[Assert\NotNull(message: 'Status is required')]
         private ?ReservationStatus $status;
 
@@ -149,7 +146,7 @@
             example: '2024-01-01T12:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationModel::READ_GROUPS)]
         #[Assert\NotNull(message: 'Created date is required')]
         private DateTime $createdAt;
 
@@ -166,7 +163,7 @@
             nullable: true
         )]
         #[ORM\Column(type: 'datetime', nullable: true)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationModel::READ_GROUPS)]
         #[Assert\Type(type: DateTime::class)]
         private ?DateTime $updatedAt;
 
@@ -223,7 +220,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationModel::READ_GROUPS)]
         public function getRoomId(): ?int
         {
             return $this->room?->getId();
@@ -263,7 +260,7 @@
             type: 'integer',
             example: 1
         )]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(ReservationModel::READ_GROUPS)]
         public function getUserId(): ?int
         {
             return $this->user?->getId();

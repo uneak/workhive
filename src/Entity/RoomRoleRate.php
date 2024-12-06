@@ -33,9 +33,6 @@
     #[ORM\Table(name: 'room_role_rate')]
     class RoomRoleRate implements RoomRoleRateModel
     {
-        public const READ_GROUPS = ['read', RoomRoleRateModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', RoomRoleRateModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the room-role rate.
          *
@@ -44,7 +41,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomRoleRateModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -58,7 +55,7 @@
         )]
         #[ORM\ManyToOne(targetEntity: Room::class)]
         #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
-        #[Groups(self::WRITE_GROUPS)]
+        #[Groups(RoomRoleRateModel::WRITE_GROUPS)]
         #[Assert\NotNull(message: 'Room is required')]
         private RoomModel $room;
 
@@ -72,7 +69,7 @@
             description: 'The user role for which this rate applies'
         )]
         #[ORM\Column(type: 'string', enumType: UserRole::class)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomRoleRateModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'User role is required')]
         private UserRole $userRole;
 
@@ -82,7 +79,7 @@
          * @var float
          */
         #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(RoomRoleRateModel::RW_GROUPS)]
         #[Assert\NotNull(message: 'Hourly rate is required')]
         #[Assert\GreaterThanOrEqual(
             value: 0,
@@ -129,7 +126,7 @@
          *
          * @return int|null
          */
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(RoomRoleRateModel::READ_GROUPS)]
         public function getRoomId(): ?int
         {
             return $this->room->getId();

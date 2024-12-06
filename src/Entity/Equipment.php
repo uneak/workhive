@@ -9,6 +9,9 @@
     use OpenApi\Attributes as OA;
     use Symfony\Component\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
+    use Vich\UploaderBundle\Mapping\Annotation as Vich;
+    use Symfony\Component\HttpFoundation\File\File;
+    use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     /**
      * Represents a piece of equipment that can be associated with rooms or reservations.
@@ -26,11 +29,9 @@
     )]
     #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
     #[ORM\Table(name: 'equipments')]
+    #[Vich\Uploadable]
     class Equipment implements EquipmentModel
     {
-        public const READ_GROUPS = ['read', EquipmentModel::GROUP_PREFIX . ':read'];
-        public const WRITE_GROUPS = ['write', EquipmentModel::GROUP_PREFIX . ':write'];
-
         /**
          * The unique identifier of the equipment.
          *
@@ -45,7 +46,7 @@
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(type: 'integer')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(EquipmentModel::READ_GROUPS)]
         private ?int $id = null;
 
         /**
@@ -62,7 +63,7 @@
             example: 'Projector'
         )]
         #[ORM\Column(type: 'string', length: 100)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(EquipmentModel::RW_GROUPS)]
         #[Assert\NotBlank(message: 'Equipment name is required')]
         #[Assert\Length(
             min: 2,
@@ -86,7 +87,7 @@
             nullable: true
         )]
         #[ORM\Column(type: 'text', nullable: true)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(EquipmentModel::RW_GROUPS)]
         #[Assert\Length(
             max: 1000,
             maxMessage: 'Description cannot be longer than {{ limit }} characters'
@@ -106,8 +107,12 @@
             nullable: true
         )]
         #[ORM\Column(type: 'string', length: 255, nullable: true)]
-        #[Groups([...self::READ_GROUPS, ...self::WRITE_GROUPS])]
+        #[Groups(EquipmentModel::RW_GROUPS)]
         private ?string $photo = null;
+
+        #[Vich\UploadableField(mapping: 'rooms', fileNameProperty: 'photo')]
+        private ?File $photoFile = null;
+
 
         /**
          * The total stock available for the equipment.
@@ -137,7 +142,7 @@
             example: '2024-01-01T12:00:00+00:00'
         )]
         #[ORM\Column(type: 'datetime')]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(EquipmentModel::READ_GROUPS)]
         private DateTime $createdAt;
 
         /**
@@ -154,7 +159,7 @@
             nullable: true
         )]
         #[ORM\Column(type: 'datetime', nullable: true)]
-        #[Groups(self::READ_GROUPS)]
+        #[Groups(EquipmentModel::READ_GROUPS)]
         private ?DateTime $updatedAt;
 
         /**
@@ -315,5 +320,31 @@
             $this->updatedAt = $updatedAt;
 
             return $this;
+        }
+
+
+        /**
+         * If manually uploading a file (i.e. not using Symfony Form) ensure an instance
+         * of 'UploadedFile' is injected into this setter to trigger the update. If this
+         * bundle's configuration parameter 'inject_on_load' is set to 'true' this setter
+         * must be able to accept an instance of 'File' as the bundle will inject one here
+         * during Doctrine hydration.
+         *
+         * @param File|UploadedFile|null $file
+         */
+        public function setPhotoFile(File|UploadedFile|null $file = null): void
+        {
+            $this->photoFile = $file;
+
+            if (null !== $file) {
+                // It is required that at least one field changes if you are using doctrine
+                // otherwise the event listeners won't be called and the file is lost
+                $this->updatedAt = new DateTime();
+            }
+        }
+
+        public function getPhotoFile(): ?File
+        {
+            return $this->photoFile;
         }
     }
