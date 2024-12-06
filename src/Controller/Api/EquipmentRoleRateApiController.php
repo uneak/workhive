@@ -4,6 +4,7 @@
 
     use App\Core\Model\ObjectModel;
     use App\Core\Services\Manager\EquipmentRoleRateManager;
+    use App\Entity\Equipment;
     use App\Entity\EquipmentRoleRate;
     use Nelmio\ApiDocBundle\Attribute\Model;
     use OpenApi\Attributes as OA;
@@ -116,9 +117,16 @@
                     response: 200,
                     description: "Returns a list of equipment role rates matching the specified criteria.",
                     content: new OA\JsonContent(
-                        type: 'array',
-                        items: new OA\Items(ref: new Model(type: EquipmentRoleRate::class,
-                            groups: [ObjectModel::READ_PREFIX]))
+                        properties: [
+                            new OA\Property(property: 'data', type: 'array',
+                                items: new OA\Items(ref: new Model(type: EquipmentRoleRate::class,
+                                    groups: [ObjectModel::READ_PREFIX]))),
+                            new OA\Property(property: 'meta', properties: [
+                                new OA\Property(property: 'total', type: 'integer'),
+                                new OA\Property(property: 'page', type: 'integer'),
+                                new OA\Property(property: 'per_page', type: 'integer')
+                            ])
+                        ]
                     )
                 ),
                 new OA\Response(

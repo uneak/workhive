@@ -5,6 +5,7 @@
     use App\Core\Enum\Status;
     use App\Core\Model\ObjectModel;
     use App\Core\Services\Manager\RoomManager;
+    use App\Entity\ReservationEquipment;
     use App\Entity\Room;
     use Nelmio\ApiDocBundle\Attribute\Model;
     use OpenApi\Attributes as OA;
@@ -117,8 +118,16 @@
                     response: 200,
                     description: "Returns a list of rooms matching the specified criteria.",
                     content: new OA\JsonContent(
-                        type: 'array',
-                        items: new OA\Items(ref: new Model(type: Room::class, groups: [ObjectModel::READ_PREFIX]))
+                        properties: [
+                            new OA\Property(property: 'data', type: 'array',
+                                items: new OA\Items(ref: new Model(type: Room::class,
+                                    groups: [ObjectModel::READ_PREFIX]))),
+                            new OA\Property(property: 'meta', properties: [
+                                new OA\Property(property: 'total', type: 'integer'),
+                                new OA\Property(property: 'page', type: 'integer'),
+                                new OA\Property(property: 'per_page', type: 'integer')
+                            ])
+                        ]
                     )
                 ),
                 new OA\Response(
@@ -155,7 +164,8 @@
                     content: new OA\JsonContent(
                         properties: [
                             new OA\Property(property: 'message', type: 'string', example: 'Room created successfully'),
-                            new OA\Property(property: 'room', ref: new Model(type: Room::class, groups: [ObjectModel::READ_PREFIX]))
+                            new OA\Property(property: 'room', ref: new Model(type: Room::class,
+                                groups: [ObjectModel::READ_PREFIX]))
                         ]
                     )
                 ),

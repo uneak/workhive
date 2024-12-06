@@ -55,8 +55,8 @@
             }
 
             $order = $request->query->get('order', 'asc');
-            $page = (int) $request->query->get('page', 1);
-            $limit = (int) $request->query->get('limit', 10);
+            $page = (int)$request->query->get('page', 1);
+            $limit = (int)$request->query->get('limit', 10);
 
             $entities = $this->manager->all(
                 filters: $filters,
@@ -65,7 +65,16 @@
                 offset: ($page - 1) * $limit
             );
 
-            $data = $this->serializer->serialize($entities, 'json', ['groups' => $serializationGroup]);
+            $data = $this->serializer->serialize($entities, 'array', ['groups' => $serializationGroup]);
+
+            $data = [
+                'data' => $data,
+                'meta' => [
+                    'total'    => '$this->manager->count(filters: $filters)',
+                    'page'     => $page,
+                    'per_page' => $limit,
+                ],
+            ];
 
             return new JsonResponse($data, 200, [], true);
         }
@@ -75,8 +84,11 @@
          *
          * @param callable|null $dataProcessor Callback to process data before entity hydration
          */
-        protected function createEntity(Request $request, ?string $defaultStatus = null, ?callable $dataProcessor = null): JsonResponse
-        {
+        protected function createEntity(
+            Request $request,
+            ?string $defaultStatus = null,
+            ?callable $dataProcessor = null
+        ): JsonResponse {
             $data = json_decode($request->getContent(), true);
 
             if (!$data) {
@@ -109,7 +121,7 @@
             } catch (\Exception $e) {
                 return new JsonResponse(
                     [
-                        'error' => 'Unable to create ' . $this->getEntityName(),
+                        'error'   => 'Unable to create ' . $this->getEntityName(),
                         'details' => $e->getMessage()
                     ],
                     400
@@ -178,7 +190,7 @@
             } catch (\Exception $e) {
                 return new JsonResponse(
                     [
-                        'error' => 'Unable to update ' . $this->getEntityName(),
+                        'error'   => 'Unable to update ' . $this->getEntityName(),
                         'details' => $e->getMessage()
                     ],
                     400
@@ -202,11 +214,12 @@
 
             try {
                 $this->manager->remove($entity, true);
+
                 return new JsonResponse(['message' => $this->getEntityName() . ' deleted successfully'], 200);
             } catch (\Exception $e) {
                 return new JsonResponse(
                     [
-                        'error' => 'Unable to delete ' . $this->getEntityName(),
+                        'error'   => 'Unable to delete ' . $this->getEntityName(),
                         'details' => $e->getMessage()
                     ],
                     400
@@ -220,6 +233,7 @@
         protected function getEntityName(): string
         {
             $parts = explode('\\', $this->entityClass);
+
             return end($parts);
         }
 
@@ -232,14 +246,14 @@
             foreach ($errors as $error) {
                 $errorMessages[] = [
                     'message' => $error->getMessage(),
-                    'path' => $error->getPropertyPath(),
-                    'cause' => $error->getCause(),
+                    'path'    => $error->getPropertyPath(),
+                    'cause'   => $error->getCause(),
                 ];
             }
 
             return new JsonResponse(
                 [
-                    'error' => 'Validation failed',
+                    'error'   => 'Validation failed',
                     'details' => $errorMessages,
                 ],
                 400
