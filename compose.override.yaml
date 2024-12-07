@@ -11,6 +11,9 @@ services:
       # If you develop on Mac or Windows you can remove the vendor/ directory
       #  from the bind-mount for better performance by enabling the next line:
       #- /app/vendor
+      # uneak
+      - ./frankenphp/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint:ro
+#      - ./frankenphp/conf.d/10-app.ini:/usr/local/etc/php/app.conf.d/10-app.ini:ro
     environment:
       MERCURE_EXTRA_DIRECTIVES: demo
       # See https://xdebug.org/docs/all_settings#mode
@@ -33,19 +36,23 @@ services:
       PMA_HOST: "database"
       PMA_USER: "app"
       PMA_PASSWORD: "app"
+    networks:
+      - app_network
     ports:
       - 81:80
 
 ###> doctrine/doctrine-bundle ###
   database:
     ports:
-      - "3306"
+      - "3306:3306"
 ###< doctrine/doctrine-bundle ###
 
 ###> symfony/mailer ###
   mailer:
     container_name: "mailer"
     image: axllent/mailpit
+    networks:
+      - app_network
     ports:
       - "1025"
       - "8025"
